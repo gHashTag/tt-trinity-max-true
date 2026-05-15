@@ -1,0 +1,13 @@
+[package]
+name = "tri1-lut-npu-witnesses"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["Vasilev Dmitrii <admin@t27.ai>"]
+description = "R7 Rust falsification witness W-104-A for L-DPC32 Wave-35 LUT-NPU 81-entry bitnet.cpp port (Trinity-loss sparsity ≥ 50%)"
+repository = "https://github.com/gHashTag/tt-trinity-max-true"
+keywords = ["falsification", "witness", "LUT-NPU", "bitnet", "ternary"]
+
+[lib]
+name = "tri1_lut_npu_witnesses"
+path = "src/lib.rs"

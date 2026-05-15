@@ -48,6 +48,8 @@ project:
     - "gf16_add.v"
     - "gf16_dot4.v"
     - "gf16_dot8.v"
+    - "gf16_popcount.v"
+    - "gf16_popcount16.v"
     - "phi_anchor_post.v"
     - "lucas_rom.v"
     - "vsa_matmul_8x8.v"

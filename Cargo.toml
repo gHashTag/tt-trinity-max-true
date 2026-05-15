@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "crates/tri1-lever-stack-witnesses",
+]
+resolver = "2"

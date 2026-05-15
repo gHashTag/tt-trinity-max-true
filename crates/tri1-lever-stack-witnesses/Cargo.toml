@@ -1,0 +1,13 @@
+[package]
+name = "tri1-lever-stack-witnesses"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["Vasilev Dmitrii <admin@t27.ai>"]
+description = "R7 Rust falsification witnesses W-101-A..E for L-DPC25 Wave-28 Lever Stack (Platinum LUT PE × BitROM × 4×4 mesh)"
+repository = "https://github.com/gHashTag/tt-trinity-max-true"
+keywords = ["falsification", "witness", "TOPS", "LUT-PE", "BitROM"]
+
+[lib]
+name = "tri1_lever_stack_witnesses"
+path = "src/lib.rs"

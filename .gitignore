@@ -1,0 +1,11 @@
+*.fst
+sim_build/
+gate_level_netlist.v
+sim/**/*.vvp
+sim/**/*.vcd
+sim/**/*.fst
+sim/**/*.log
+__pycache__/
+*.pyc
+test/tb.out
+test/tb.vcd

@@ -1,0 +1,13 @@
+[package]
+name = "tri1-tom-witnesses"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["Vasilev Dmitrii <admin@t27.ai>"]
+description = "R7 Rust falsification witness W-103-A for L-DPC31 Wave-34 TOM Ternary ROM Accelerator (layer idle fraction ≥ 50%)"
+repository = "https://github.com/gHashTag/tt-trinity-max-true"
+keywords = ["falsification", "witness", "TOM", "ternary", "ROM"]
+
+[lib]
+name = "tri1_tom_witnesses"
+path = "src/lib.rs"

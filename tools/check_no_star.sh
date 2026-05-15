@@ -15,26 +15,21 @@
 #   cells each) and blow the area/WNS targets.  All new arithmetic must use
 #   explicit LUT structures or pre-approved GF modules.
 #
-# Exclusions (applied to each added line in the diff):
-#   • src/gf16_mul.v        — grandfathered; GF(16) Karatsuba, no DSP risk
-#   • Single-line comments  — lines where `*` only appears after `//`
-#   • Yosys/Synth attributes — (* keep *) / (* no_retiming *) style
-#   • Sensitivity wildcards  — always @(*) / always @*
-#   • Bit-slice literals    — integer_constant * identifier patterns in
-#                              generate/for index arithmetic (e.g. 2*i, 32*gi)
-#
-# Modes:
-#   --diff BASE_REF   Check only lines added vs BASE_REF (default in CI)
-#   --full            Scan full src/*.v (standalone audit mode)
+# Exclusions applied to each added line in the diff:
+#   - src/gf16_mul.v        — grandfathered; GF(16) Karatsuba, no DSP risk
+#   - Lines after //        — single-line comment remainder
+#   - (* ... *) attributes  — Yosys synthesis attribute syntax
+#   - always @(*) / @*      — sensitivity list wildcards (not arithmetic)
 #
 # Output (R5-honest):
-#   PASS  → exit 0   "R-SI-1 PASS: no new * operators found."
-#   FAIL  → exit 1   each offending file:line + FAIL banner
+#   PASS  → exit 0   prints "R-SI-1 PASS: no new * operators found."
+#   FAIL  → exit 1   prints each offending added line + FAIL banner
 #
 # Usage:
-#   bash tools/check_no_star.sh                      # diff vs origin/main
-#   bash tools/check_no_star.sh --diff origin/main   # explicit base ref
-#   bash tools/check_no_star.sh --full               # full scan (audit)
+#   bash tools/check_no_star.sh                     # diff vs origin/main (default)
+#   bash tools/check_no_star.sh --diff origin/main  # explicit base ref
+#   bash tools/check_no_star.sh --full              # full-scan audit mode (exit 0)
+#   bash tools/check_no_star.sh src/                # legacy positional — runs diff mode
 #
 # Author: Vasilev Dmitrii <admin@t27.ai>
 # Refs:   trinity-fpga#94 (Lane U pre-registration), #61 (R-SI-1 origin),
@@ -61,9 +56,14 @@ while [[ $# -gt 0 ]]; do
             MODE="full"
             shift
             ;;
+        src/|src)
+            # Legacy positional argument — ignore, use diff mode
+            shift
+            ;;
         *)
-            echo "Unknown argument: $1" >&2
-            exit 2
+            # Any other argument: treat as base ref for diff mode
+            BASE_REF="$1"
+            shift
             ;;
     esac
 done
@@ -74,29 +74,28 @@ echo "--------------------------------------------------------------------"
 # Shared filter pipeline — applied to raw grep/diff output
 # Removes:
 #   1. Grandfathered file
-#   2. Lines where * follows // (single-line comment)
+#   2. Lines where * follows // (single-line comment context)
 #   3. (* ... *) synthesis attribute lines
 #   4. always @(*) / always @* sensitivity list lines
-filter_hits() {
+filter_star_lines() {
     grep -v "${GRANDFATHERED}" \
-    | grep -v '^[^:]*:[^:]*:.*//.*\*' \
-    | grep -vE '^[^:]*:[^:]*:[[:space:]]*//' \
     | grep -vE '\(\*[^)]*\)' \
     | grep -vE '@\s*\(\s*\*\s*\)' \
-    | grep -vE '@\s*\*\b' \
+    | grep -vE '@\s*\*' \
     || true
 }
 
 if [[ "${MODE}" == "diff" ]]; then
-    # Fetch base ref if in a shallow clone (CI)
+    # Fetch base ref if in a shallow CI clone
     git fetch origin main --depth=1 2>/dev/null || true
 
     HITS=$(git diff "${BASE_REF}" -- 'src/*.v' \
         | grep '^+' \
         | grep -v '^+++' \
         | grep -E '\*' \
+        | grep -v '//.*\*' \
         | sed 's/^+/ADDED: /' \
-        | filter_hits \
+        | filter_star_lines \
         || true)
 
     if [[ -z "${HITS}" ]]; then
@@ -111,20 +110,22 @@ if [[ "${MODE}" == "diff" ]]; then
     fi
 
 else
-    # --full mode: scan entire src/*.v
+    # --full mode: scan entire src/*.v — audit-only, always exits 0
+    # (pre-existing * operators in baseline are listed as INFO, not violations)
     HITS=$(grep -nE '\*' src/*.v 2>/dev/null \
-        | filter_hits \
-        | grep -v '^[^:]*:[^:]*:.*gf16_mul' \
+        | grep -v "${GRANDFATHERED}" \
+        | grep -v '^[^:]*:[^:]*:.*//.*\*' \
+        | grep -vE '^[^:]*:[^:]*:[[:space:]]*\*' \
+        | filter_star_lines \
         || true)
 
     if [[ -z "${HITS}" ]]; then
         echo "R-SI-1 PASS (full scan): no * operators found outside grandfathered files."
-        exit 0
     else
-        echo "R-SI-1 INFO (full scan — pre-existing hits listed for audit):"
+        echo "R-SI-1 INFO (full scan — pre-existing hits listed for audit only):"
         echo "${HITS}"
         echo "--------------------------------------------------------------------"
-        echo "R-SI-1 PASS: full-scan mode is audit-only; use --diff for CI gating."
-        exit 0
+        echo "R-SI-1 NOTE: full-scan mode is audit-only. Use default (diff) mode for CI gating."
     fi
+    exit 0
 fi

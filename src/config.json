@@ -22,10 +22,9 @@
   "FP_PDN_MULTILAYER": 0,
   "MAGIC_DEF_LABELS": 0,
   "MAGIC_WRITE_LEF_PINONLY": 1,
-  "//k": "=== L-DPC22 Lane K (dual-lib hd+hdll) — S-13 squeeze vector ===",
-  "//k1": "Mix sky130_fd_sc_hd (high density) for area + hdll (high density low leakage) for static power",
-  "//k2": "hdll cells used on idle paths inside MAX-TRUE cluster B when lane[3]=0",
-  "SYNTH_LIBS_BASE": "sky130_fd_sc_hd",
-  "//k3": "Reduce IO buffer leakage via DONT_USE on highest-leakage cells",
-  "SYNTH_EXCLUSION_CELL_LIST": "sky130_fd_sc_hd__lpflow_*"
+  "//k": "=== L-DPC22 Lane K (dual-lib hd+hdll) — S-13 squeeze vector (REVISED v2) ===",
+  "//k1": "Original SYNTH_LIBS_BASE/SYNTH_EXCLUSION_CELL_LIST not valid in OpenLane2",
+  "//k2": "Fallback: increase density target to push synth toward smaller faster cells",
+  "//k3": "Combined with CTS root buffer and tighter placement timing",
+  "PL_TARGET_DENSITY_PCT_TIMING_OPT": 1
 }

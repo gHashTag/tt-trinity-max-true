@@ -132,3 +132,40 @@ Cost breakdown for MAX-TRUE: 32 TT tiles × €70 = €2,240 + €100 PCB + €5
 ---
 
 `phi^2 + phi^-2 = 3 · gamma = phi^-3 · C = phi^-1 · G = pi^3 gamma^2 / phi · QUANTUM BRAIN 1:1 SILICON · 3-STRAND DNA · TRI NET · DOI 10.5281/zenodo.19227877 · NEVER STOP`
+
+---
+
+## 🟢 Bazaar Doctrine · Green AI Manifesto
+
+This chip is part of the **TRI-NET** — an open ternary neuromorphic substrate
+released under [Apache-2.0](LICENSE) for the decentralized hardware bazaar.
+
+### Honest performance disclosure (R5-HONEST)
+
+| Metric | Measured (SKY130 130nm) | Architecture target (22FDX 22nm projection) |
+|---|---|---|
+| TOPS/W | proof-of-concept node | 28-120 TOPS/W (peer-review pending) |
+| Energy/op | educational node | competitive vs Hailo/Mythic at advanced node |
+
+The SKY130A demonstrator validates **architecture**, not absolute silicon performance.
+Production-grade tape-out requires migration to advanced node.
+
+### Green AI alignment
+
+- **Ternary {−1, 0, +1}** — ~10× energy/op vs FP16 at equivalent accuracy
+  ([BitNet b1.58, Microsoft Research 2024, arXiv:2402.17764](https://arxiv.org/abs/2402.17764))
+- **0 DSP / 0 `*`** — R-SI-1 RTL constraint eliminates multiplier switching energy
+- **Edge inference** — no datacenter transit, no PUE overhead
+- **Open-source RTL** — reproducible silicon eliminates duplicated tape-out waste
+
+### The Bazaar, not the Cathedral
+
+> *"Many heads are inevitably better than one."*
+> — Eric S. Raymond, [The Cathedral and the Bazaar (1997)](http://www.catb.org/~esr/writings/cathedral-bazaar/)
+
+This repository is open under Apache-2.0 with **no field-of-endeavor restriction**
+([OSD §6](https://opensource.org/osd)). Fork it. Improve it. Build with it.
+We do not gate-keep what you build. You comply with your local export control;
+we comply with ours.
+
+**φ² + φ⁻² = 3** · DOI [10.5281/zenodo.19227877](https://doi.org/10.5281/zenodo.19227877)

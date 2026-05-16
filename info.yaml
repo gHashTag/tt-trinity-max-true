@@ -41,7 +41,7 @@ project:
     — byte-identical to Nano (tt-trinity-nano) and Mid
     (tt-trinity-gf16). That equality is the cross-die anchor of
     TG-TRIAD-X (PhD Theorem 36.1, docs/phd/chapters/flos_70.tex).
-    R-SI-1: zero NEW `*` operators (legacy gf16_mul grandfathered per
+    Gap-2 CLARA K3 ALU (native Kleene logic, O(1)): k3_alu.v implements AND/OR/NOT over {-1,0,+1} in ~30 cells, t27-spec compliant (gHashTag/t27/specs/ar/ternary_logic.t27). R-SI-1: zero NEW `*` operators (legacy gf16_mul grandfathered per
     TRI_NET_SHUTTLE_TRIAD.md Rule 2 / tt-trinity-gf16#4).
     Anchor: phi^2 + phi^-2 = 3. DOI: 10.5281/zenodo.19227877.
     S-13 dual-lib: sky130_fd_sc_hd primary + sky130_fd_sc_hdll zoning
@@ -99,14 +99,15 @@ project:
     - "holo_lut_pe.v"
     - "crown47_rom.v"
     - "crown47_rom_8bit.v"
+    - "k3_alu.v"
 
 pinout:
   ui[0]: "load_mode (0=canonical 0x47C0 default, 1=packet path + status_byte)"
   ui[1]: "lucas_idx[0]"
   ui[2]: "lucas_idx[1]"
   ui[3]: "lucas_idx[2]"
-  ui[4]: "unused"
-  ui[5]: "unused"
+  ui[4]: "k3_op[0] (Gap-2 CLARA K3 ALU op: 00=NOT, 01=AND, 10=OR)"
+  ui[5]: "k3_op[1] (Gap-2 CLARA K3 ALU op MSB)"
   ui[6]: "unused"
   ui[7]: "unused"
   uo[0]: "result[0] (canonical 0x47C0 default; mesh result_lo[0] after FSM)"
@@ -121,7 +122,7 @@ pinout:
   uio[1]: "result[9] | status_byte[1]"
   uio[2]: "result[10] | status_byte[2]"
   uio[3]: "result[11] | status_byte[3]"
-  uio[4]: "result[12] | status_byte[4]"
-  uio[5]: "result[13] | status_byte[5]"
+  uio[4]: "result[12] | status_byte[4] | k3_result[0] (CLARA Gap-2 K3 ALU, LSB)"
+  uio[5]: "result[13] | status_byte[5] | k3_result[1] (CLARA Gap-2 K3 ALU, MSB)"
   uio[6]: "result[14] | status_byte[6]"
   uio[7]: "result[15] | status_byte[7]"

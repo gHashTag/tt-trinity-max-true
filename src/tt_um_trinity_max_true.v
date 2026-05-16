@@ -471,12 +471,36 @@ module tt_um_trinity_max_true (
     // sign bit of Q1.15 must be 0 — top bit of dist_out)
     wire phi_oracle_ok = phi_dist_valid & ~phi_dist[15];
 
+
+    // L-S35: ASP solver mini observer (CLARA Gap-6 DARPA CLARA TA1.1)
+    // Spec: gHashTag/t27/specs/ar/asp_solver.t27
+    // ~600 cells. Start triggered by post_done (runs once on reset/POST).
+    // No rules loaded → stable model = empty set (observer pattern).
+    // asp_stable feeds super_crown_ok. R-SI-1 clean, pure Verilog-2005.
+    wire        asp_stable;
+    wire [15:0] asp_model;
+    wire [3:0]  asp_iter;
+    wire        asp_capped;
+    asp_solver_mini u_asp (
+        .clk       (clk),
+        .rst_n     (rst_n),
+        .load_rule (1'b0),
+        .rule_idx  (4'h0),
+        .rule_data (24'h0),
+        .start     (post_done),
+        .model_out (asp_model),
+        .stable    (asp_stable),
+        .iter_count(asp_iter),
+        .capped    (asp_capped)
+    );
+
     // SUPER-CROWN aggregate health bit (9 original + 6 PhD-anchored = 15 monitors online)
     wire super_crown_ok =
         mm16_ok & enc_ok & bpb_ok & hash_ok & multi_rcpt_ok &
         alu_ok  & ring_ok & phi_div_ok & wb_ok &
         cassini_ok & plrm_ok & bpb_guard_ok &
-        nca_ok & strobe_ok & phi_oracle_ok;
+        nca_ok & strobe_ok & phi_oracle_ok &
+        asp_stable;
 
     // =================================================================
     // Output mux: legacy 0x47C0 path → mesh result once produced.
@@ -546,6 +570,7 @@ module tt_um_trinity_max_true (
                      nca_in_band, nca_popcount,
                      seed_safe, seed_replaced,
                      phi_dist[14:0],
+                     asp_model, asp_iter, asp_capped,
                      ui_in[7:4], 1'b0};
 
 endmodule

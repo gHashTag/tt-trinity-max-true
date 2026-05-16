@@ -1,0 +1,57 @@
+{
+  "format_family": "GoldenFloat",
+  "version": "2.0",
+  "canonical_reference": "THM-009 (phi_ratio optimality) — see specs/numeric/phi_ratio.t27 and docs/nona-02-organism/NUMERIC-STANDARD-001.md",
+  "normative_markdown": "docs/nona-02-organism/NUMERIC-STANDARD-001.md",
+  "value_formula": "(-1)^S * 2^(E - bias) * (1 + M / 2^mant_bits)",
+  "phi_identity": {
+    "theorem": "phi_squared_equals_phi_plus_one",
+    "statement": "phi^2 = phi + 1 (exact in f64, Ring 45 proven)",
+    "phi_f64_hex": "0x1.9E3779B97F4A8p+0",
+    "phi_sq_f64_hex": "0x1.4F1BBCDCBFA54p+1",
+    "phi_plus_one_f64_hex": "0x1.4F1BBCDCBFA54p+1",
+    "residual_f64": 0.0,
+    "tolerance": 1e-15,
+    "verdict": "PASS",
+    "ring_proven": 45,
+    "reference": "Kernel/Phi.v (L5 IDENTITY proof)"
+  },
+  "formats": {
+    "GF4": { "bits": 4, "sign": 1, "exp": 1, "mant": 2, "bias": 0, "phi_dist": 0.1180339887498949 },
+    "GF8": { "bits": 8, "sign": 1, "exp": 3, "mant": 4, "bias": 3, "phi_dist": 0.1320339887498949 },
+    "GF12": { "bits": 12, "sign": 1, "exp": 4, "mant": 7, "bias": 7, "phi_dist": 0.04660512288042107 },
+    "GF16": {
+      "bits": 16,
+      "sign": 1,
+      "exp": 6,
+      "mant": 9,
+      "bias": 31,
+      "phi_dist": 0.0486326415435630,
+      "primary": true
+    },
+    "GF20": { "bits": 20, "sign": 1, "exp": 7, "mant": 12, "bias": 63, "phi_dist": 0.03463264154356299 },
+    "GF24": { "bits": 24, "sign": 1, "exp": 9, "mant": 14, "bias": 255, "phi_dist": 0.02482317991669112 },
+    "GF32": { "bits": 32, "sign": 1, "exp": 12, "mant": 19, "bias": 2047, "phi_dist": 0.01354495894042812 },
+    "GF64": { "bits": 64, "sign": 1, "exp": 24, "mant": 39, "bias": 8388607, "phi_dist": 0.0028268468254629 },
+    "GF128": { "bits": 128, "sign": 1, "exp": 48, "mant": 79, "bias": 140737488355327, "phi_dist": 0.009696042799364053 },
+    "GF256": { "bits": 256, "sign": 1, "exp": 97, "mant": 158, "bias": 7.9e37, "phi_dist": 0.00412087369321891 }
+  },
+  "tri_net_extended_formats": {
+    "FP32": { "bits": 32, "sign": 1, "exp": 8, "mant": 23, "bias": 127, "ieee_compliant": true },
+    "FP16": { "bits": 16, "sign": 1, "exp": 5, "mant": 10, "bias": 15, "ieee_compliant": true },
+    "BF16": { "bits": 16, "sign": 1, "exp": 8, "mant": 7, "bias": 127, "ieee_compliant": false },
+    "FP8_E4M3": { "bits": 8, "sign": 1, "exp": 4, "mant": 3, "bias": 7, "use_case": "training" },
+    "FP8_E5M2": { "bits": 8, "sign": 1, "exp": 5, "mant": 2, "bias": 15, "use_case": "inference" },
+    "Int4": { "bits": 4, "signed": true, "range": "[-8, 7]", "use_case": "quantization" },
+    "Int8": { "bits": 8, "signed": true, "range": "[-128, 127]", "use_case": "quantization" },
+    "NF4": { "bits": 4, "levels": 16, "distribution": "Normal(0,1) quantiles", "use_case": "QLoRA" },
+    "Posit16": { "bits": 16, "es": 1, "use_case": "Type III Unum" },
+    "Binary16": { "bits": 16, "same_as": "FP16", "use_case": "routing" }
+  },
+  "sacred_constants": {
+    "PHI": { "value": 1.6180339887498948482, "tolerance": 1e-15 },
+    "TRINITY": { "value": 3.0, "tolerance": 0.0 }
+  },
+  "format_count": 10,
+  "total_tri_net_formats": 17
+}

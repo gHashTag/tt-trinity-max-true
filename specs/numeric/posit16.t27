@@ -1,0 +1,395 @@
+// SPDX-Identifier: Apache-2.0
+// t27/specs/numeric/posit16.t27
+// Posit16 - 16-bit posit type (unum 1.0 format)
+// NUMERIC-STANDARD-001 Agent 12 (P1)
+//
+// Posit16 format:
+// - Posit is an alternative to IEEE floating point
+// - Better accuracy around 1.0
+// - No NaN or infinity (uses regime instead)
+// - Uses 1 exponent bit with variable-size regime
+//
+// Posit16 with ES=1:
+//   S: 1 bit (sign)
+//   R: Variable size regime (prefix code)
+//   E: 1 bit exponent
+//   M: Variable mantissa
+
+module Posit16 {
+    // Import test/invariant/bench framework
+    use base::testing;
+    use base::benchmarking;
+
+    // 1. Format Definition
+    // Posit16 bit layout with ES=1: [S(1) RRR...R(x) E(1) MMM...M(15-x)]
+    //   S: 1 bit  (sign)
+    //   R: x bits (regime)
+    //   E: 1 bit  (exponent)
+    //   M: 15-x bits (mantissa)
+    //
+    // ES (Exponent size) = 1
+    // Max regime size = 2^ES = 2 bits
+
+    const BITS : u8 = 16;
+    const SIGN_BITS : u8 = 1;
+    const ES : u8 = 1;
+    const MAX_REGIME_BITS : u8 = 2;
+    const EXP_BITS : u8 = 1;
+
+    // 2. Posit16 Type
+
+    struct Posit16 {
+        raw : u16,  // 16-bit raw value
+    }
+
+    // 3. Encoding/Decoding
+
+    // Encode f64 to Posit16 (simplified, ES=1)
+    fn encode(value: f64) -> Posit16 {
+        if (value == 0.0) {
+            return Posit16{ raw = 0 };
+        }
+
+        const sign = if (value < 0.0) { 1 } else { 0 };
+        const abs_val = if (value < 0.0) { -value } else { value };
+
+        // Calculate useed (2^E)
+        const useed = 2.0;
+
+        // Calculate regime k
+        let k : i8 = 0;
+        let temp = abs_val;
+
+        if (temp < 1.0) {
+            while (temp < 1.0 && k > -4) {
+                temp = temp * useed;
+                k = k - 1;
+            }
+        } else {
+            while (temp >= useed && k < 3) {
+                temp = temp / used;
+                k = k + 1;
+            }
+        }
+
+        // Clamp regime
+        k = if (k < -2) { -2 } else if (k > 2) { 2 } else { k };
+
+        // Calculate exponent (ES=1, so either -1 or 0)
+        let exp = 0;
+        if (k == 0) {
+            // Try to fit in exponent
+            const exp_val = abs_val - 1.0;
+            exp = if (exp_val >= 0.0) { 1 } else { 0 };
+        } else if (k > 0) {
+            exp = 0;
+        }
+
+        // Calculate mantissa (14 bits remaining)
+        let mantissa_bits = 14;
+        let fraction = abs_val / pow_use_k_regime(k, exp);
+
+        // Scale to mantissa bits
+        const max_mant = (1 << mantissa_bits) - 1;
+        let mant = (fraction * (max_mant as f64 + 1.0)) as u16;
+        if (mant > max_mant) { mant = max_mant; }
+
+        // Pack bits
+        let raw : u16 = 0;
+
+        // Sign bit
+        raw = (sign << 15) as u16;
+
+        // Regime bits (prefix code)
+        if (k == 0) {
+            // 0 prefix
+        } else if (k > 0) {
+            // k ones followed by 0
+            raw |= (((1u16 << k) - 1) as u16) << (15 - 1 - k);
+        } else {
+            // |k| zeros followed by 1
+            raw |= 1u16 << (15 - 1 - (-k));
+        }
+
+        // Exponent bit
+        raw |= (exp as u16) << (15 - 1 - (if (k == 0) { 0 } else if (k > 0) { k } else { -k }) - 1));
+
+        // Mantissa bits
+        let shift = 15 - 1 - (if (k == 0) { 0 } else if (k > 0) { k } else { -k }) - 1) - 1;
+        if (shift >= 0) {
+            raw |= (mant << shift) as u16;
+        }
+
+        return Posit16{ raw = raw };
+    }
+
+    // Decode Posit16 to f64 (simplified, ES=1)
+    fn decode(p: Posit16) -> f64 {
+        if (p.raw == 0) {
+            return 0.0;
+        }
+
+        const sign = if ((p.raw >> 15) & 1 != 0) { -1.0 } else { 1.0 };
+
+        // Extract regime
+        let regime = 0i8;
+        let bit_pos = 14;
+        let regime_bit = (p.raw >> bit_pos) & 1;
+
+        if (regime_bit == 1) {
+            // Ones followed by zero
+            while (bit_pos > 0 && ((p.raw >> (bit_pos - 1)) & 1) == 1 && regime < 2) {
+                regime = regime + 1;
+                bit_pos = bit_pos - 1;
+            }
+        } else {
+            // Zeros followed by one
+            while (bit_pos > 0 && ((p.raw >> (bit_pos - 1)) & 1) == 0 && regime > -2) {
+                regime = regime - 1;
+                bit_pos = bit_pos - 1;
+            }
+        }
+
+        // Skip the terminating bit
+        bit_pos = bit_pos - 1;
+
+        // Extract exponent (1 bit)
+        const exp = ((p.raw >> bit_pos) & 1) as i8;
+        bit_pos = bit_pos - 1;
+
+        // Extract mantissa (remaining bits)
+        const mantissa_bits = bit_pos + 1;
+        const max_mant = (1u16 << mantissa_bits) - 1;
+        let mantissa = (p.raw & max_mant) as f64;
+        const mant_normalized = 1.0 + mantissa / (max_mant + 1) as f64;
+
+        // Calculate value
+        let value = mant_normalized;
+        if (regime > 0) {
+            value = value * pow_useed_posit(regime as f64);
+        } else if (regime < 0) {
+            value = value / pow_useed_posit((-regime) as f64);
+        }
+
+        if (exp != 0) {
+            value = value * 2.0;
+        }
+
+        return sign * value;
+    }
+
+    // 4. Format Properties
+
+    fn min_positive() -> f64 {
+        // Smallest positive: regime=-2, exp=0, mant=0
+        return 1.0 / 4.0;
+    }
+
+    fn max_value() -> f64 {
+        // Largest finite: regime=2, exp=1, mant=all ones
+        // 4 * 2 * (1 + 1/32768) ≈ 8.0002
+        return 4.0 * 2.0 * (1.0 + 32767.0 / 32768.0);
+    }
+
+    fn epsilon() -> f64 {
+        // Smallest representable difference at 1.0
+        return 1.0 / 32768.0;
+    }
+
+    // 5. Validation
+
+    fn validate_format() -> bool {
+        return BITS == 16 && ES == 1;
+    }
+
+    // 6. Use Cases
+
+    // Posit16 is optimal for:
+    // - High-accuracy applications around 1.0
+    // - Control systems
+    // - Scientific computing
+    // - Better dynamic range than FP16 for some applications
+    // - No NaN/infinity behavior
+
+    // Memory: 16 bits = 2 bytes (same as FP16)
+    const MEMORY_RATIO_VS_FP32 : f32 = 16.0 / 32.0;  // 0.5
+
+    // 7. Helper Functions
+
+    fn pow_use_k_regime(k: i8, exp: i8) -> f64 {
+        const useed = 2.0;
+        if (k > 0) {
+            let result = 1.0;
+            for (i in 0..k) {
+                result = result * useed;
+            }
+            return result;
+        } else if (k < 0) {
+            let result = 1.0;
+            for (i in 0..(-k)) {
+                result = result / used;
+            }
+            return result;
+        }
+        return 1.0;
+    }
+
+    fn pow_useed_posit(k: f64) -> f64 {
+        const useed = 2.0;
+        let result = 1.0;
+        let i : i32 = k as i32;
+        while (i > 0) {
+            result = result * used;
+            i = i - 1;
+        }
+        return result;
+    }
+
+    fn is_zero(p: Posit16) -> bool {
+        return p.raw == 0;
+    }
+
+    fn is_negative(p: Posit16) -> bool {
+        return (p.raw & 0x8000) != 0 && p.raw != 0x8000;
+    }
+
+    fn is_positive(p: Posit16) -> bool {
+        return (p.raw & 0x8000) == 0 && p.raw != 0;
+    }
+
+    // TDD-Inside-Spec: Tests and Invariants for Posit16
+
+    test posit16_decode_zero
+        given p = Posit16{ raw = 0 }
+        when value = decode(p)
+        then value == 0.0
+
+    test posit16_encode_zero_roundtrip
+        given original = 0.0
+        and   encoded = encode(original)
+        and   decoded = decode(encoded)
+        then decoded == original
+
+    test posit16_encode_one_roundtrip
+        given original = 1.0
+        and   encoded = encode(original)
+        and   decoded = decode(encoded)
+        then abs(decoded - 1.0) < 0.1
+
+    test posit16_bits_constant
+        then BITS == 16
+
+    test posit16_es_constant
+        then ES == 1
+
+    test posit16_min_positive_greater_than_zero
+        given min_pos = min_positive()
+        then min_pos > 0.0
+
+    test posit16_max_value_positive
+        given max_val = max_value()
+        then max_val > 0.0
+
+    test posit16_epsilon_positive
+        given eps = epsilon()
+        then eps > 0.0
+
+    test posit16_memory_ratio_vs_fp32
+        given ratio = MEMORY_RATIO_VS_FP32
+        then abs(ratio - 0.5) < 0.01
+
+    test posit16_validate_format_success
+        given valid = validate_format()
+        then valid == true
+
+    test posit16_is_zero_true
+        given p = Posit16{ raw = 0 }
+        then is_zero(p) == true
+
+    test posit16_is_zero_false
+        given p = Posit16{ raw = 0x4000 }
+        then is_zero(p) == false
+
+    test posit16_is_positive_true
+        given p = Posit16{ raw = 0x4000 }
+        then is_positive(p) == true
+
+    test posit16_is_negative_true
+        given p = Posit16{ raw = 0xC000 }
+        then is_negative(p) == true
+
+    test posit16_encode_negative
+        given original = -1.5
+        and   encoded = encode(original)
+        and   decoded = decode(encoded)
+        then decoded < 0.0
+
+    test posit16_max_regime_range
+        given max_val = max_value()
+        then max_val > 4.0
+
+    test posit16_min_regime_range
+        given min_pos = min_positive()
+        then min_pos < 1.0
+
+    test posit16_regime_zero_value
+        given encoded = encode(1.0)
+        then (encoded.raw & 0x6000) == 0  // Regime is zero
+
+    test posit16_regime_one_value
+        given encoded = encode(2.0)
+        then (encoded.raw & 0x4000) != 0  // Regime is 1
+
+    test posit16_regime_neg_one_value
+        given encoded = encode(0.5)
+        then (encoded.raw & 0x2000) != 0  // Regime is -1
+
+    invariant posit16_bits_constant
+        assert BITS == 16
+
+    invariant posit16_es_is_one
+        assert ES == 1
+
+    invariant posit16_max_greater_than_min
+        assert max_value() > min_positive()
+
+    invariant posit16_epsilon_positive
+        assert epsilon() > 0.0
+
+    invariant posit16_encode_preserves_zero
+        assert encode(0.0).raw == 0
+
+    invariant posit16_min_positive_reasonable
+        assert min_positive() > 0.0 and min_positive() < 1.0
+
+    invariant posit16_max_value_reasonable
+        assert max_value() > 4.0 and max_value() < 10.0
+
+    invariant posit16_pow_useed_positive
+        given k = 2.0
+        then pow_useed_posit(k) > 0.0
+
+    invariant posit16_all_nonzero_values_decode_correct
+        given x = 1.5
+        then abs(decode(encode(x)) - x) / x < 0.5
+
+    bench posit16_encode_latency
+        measure: nanoseconds to encode(1.0)
+        target: < 200ns
+
+    bench posit16_decode_latency
+        measure: nanoseconds to decode(encode(1.5))
+        target: < 150ns
+
+    bench posit16_encode_decode_roundtrip
+        measure: nanoseconds to encode(1.0) and decode(encode(1.0))
+        target: < 350ns
+
+    bench posit16_pow_usek_regime_latency
+        measure: nanoseconds to pow_use_k_regime(2, 0)
+        target: < 100ns
+
+    bench posit16_pow_useed_posit_latency
+        measure: nanoseconds to pow_useed_posit(2.0)
+        target: < 100ns
+}

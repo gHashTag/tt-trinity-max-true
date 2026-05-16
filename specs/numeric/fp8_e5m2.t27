@@ -1,0 +1,400 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/numeric/fp8_e5m2.t27
+// FP8 E5M2 - 8-bit floating point with 5 exponent, 2 mantissa (OCP standard)
+// NUMERIC-STANDARD-001 Agent 8 (P1)
+
+module FP8E5M2 {
+    // Import test/invariant/bench framework
+    use base::testing;
+    use base::benchmarking;
+
+    // 1. Format Definition
+    // FP8 E5M2 bit layout: [S(1) EEEEE(5) MM(2)]
+    //   S: 1 bit  (sign)
+    //   E: 5 bits (exponent)
+    //   M: 2 bits (mantissa)
+    //
+    // OCP FP8 E5M2 standard:
+    // - Bias: 15 (2^(5-1) - 1)
+    // - Supports infinities and NaN
+    // - Range: 2^-14 to 2^15
+    // - Precision: ~1.7 decimal digits
+    // - Better dynamic range, lower precision than E4M3
+
+    const BITS : u8 = 8;
+    const SIGN_BITS : u8 = 1;
+    const EXP_BITS : u8 = 5;
+    const MANT_BITS : u8 = 2;
+
+    // Bias for exponent (2^(5-1) - 1 = 15)
+    const EXP_BIAS : i8 = 15;
+
+    const EXP_MAX : u8 = 31;  // All ones = special
+
+    // Special values
+    const INF_POS : u8 = 0x7C;  // 01111100
+    const INF_NEG : u8 = 0xFC;  // 11111100
+    const NAN : u8 = 0x7E;     // 01111110
+
+    // 2. FP8E5M2 Type
+
+    struct FP8E5M2 {
+        raw : u8,  // 8-bit raw value
+    }
+
+    // 3. Encoding/Decoding
+
+    // Encode f32 to FP8 E5M2
+    fn encode(value: f32) -> FP8E5M2 {
+        if (value == 0.0) {
+            return FP8E5M2{ raw = 0 };
+        }
+
+        // Handle special values
+        if (std.math.is_inf(value)) {
+            const sign = if (value < 0.0) { 1 } else { 0 };
+            return FP8E5M2{ raw = (sign << 7) | 0x3C };  // sign + 0111100
+        }
+        if (std.math.is_nan(value)) {
+            return FP8E5M2{ raw = 0x7E };  // 01111110
+        }
+
+        const sign = if (value < 0.0) { 1 } else { 0 };
+        const abs_val = if (value < 0.0) { -value } else { value };
+
+        // Extract exponent (unbiased)
+        const exp_unbiased = floor_log2(abs_val) as i8;
+        const exp_biased = exp_unbiased + EXP_BIAS;
+
+        // Clamp exponent
+        const exp_clamped = if (exp_biased < 1) {
+            0  // Underflow to zero
+        } else if (exp_biased > EXP_MAX - 1) {
+            EXP_MAX - 1  // Overflow to infinity later
+        } else {
+            exp_biased
+        };
+
+        // Extract mantissa (2 bits)
+        const normalized = abs_val / pow2(exp_unbiased as f64);
+        const frac = normalized - 1.0;
+        const max_mant = (1 << MANT_BITS) - 1;
+        let mant = (frac * (max_mant as f64 + 1.0)) as u8;
+
+        // Round to nearest
+        const mant_rounded = (mant + 2) >> 2;
+        const mant_clamped = if (mant_rounded > max_mant) { 0 } else { mant_rounded as u8 };
+
+        // Check for mantissa overflow
+        const final_exp = if (mant_clamped == 0) {
+            exp_clamped + 1
+        } else {
+            exp_clamped
+        };
+
+        // Handle overflow to infinity
+        if (final_exp == EXP_MAX) {
+            return FP8E5M2{ raw = (sign << 7) | 0x3C };
+        }
+
+        return FP8E5M2{
+            raw = (sign << 7) | (final_exp << 2) | mant_clamped
+        };
+    }
+
+    // Decode FP8 E5M2 to f64
+    fn decode(fp: FP8E5M2) -> f64 {
+        const sign = (fp.raw >> 7) as u8;
+        const exp_biased = ((fp.raw >> 2) & 0x1F) as u8;
+        const mant = (fp.raw & 0x03) as u8;
+
+        // Zero
+        if (exp_biased == 0 && mant == 0) {
+            return 0.0;
+        }
+
+        // Infinity
+        if (exp_biased == EXP_MAX && mant == 0) {
+            const sign_mult = if (sign != 0) { -1.0 } else { 1.0 };
+            return if (sign_mult < 0.0) { -std.math.inf(f32) } else { std.math.inf(f32) };
+        }
+
+        // NaN
+        if (exp_biased == EXP_MAX && mant != 0) {
+            return std.math.nan(f32);
+        }
+
+        // Normal number
+        const exp_unbiased = exp_biased as i8 - EXP_BIAS;
+        const mant_normalized = 1.0 + (mant as f64) / 4.0;
+        const value = mant_normalized * pow2(exp_unbiased as f64);
+
+        if (sign != 0) {
+            return -value;
+        }
+        return value;
+    }
+
+    // 4. Format Properties
+
+    fn max_value() -> f64 {
+        // Infinity
+        return std.math.inf(f32);
+    }
+
+    fn max_finite() -> f64 {
+        // Max finite: mant=3/4, exp=14
+        return (1.0 + 3.0 / 4.0) * pow2(14.0);
+    }
+
+    fn min_positive() -> f64 {
+        // Min positive: mant=1/4, exp=-14
+        return (1.0 / 4.0) * pow2(-14.0);
+    }
+
+    fn epsilon() -> f64 {
+        // Smallest representable difference at 1.0
+        return pow2(-14.0) / 4.0;
+    }
+
+    // 5. Validation
+
+    fn validate_format() -> bool {
+        return (BITS == 8) &&
+               (SIGN_BITS == 1) &&
+               (EXP_BITS == 5) &&
+               (MANT_BITS == 2);
+    }
+
+    // 6. Use Cases
+
+    // FP8 E5M2 is optimal for:
+    // - ML inference requiring wide dynamic range
+    // - Transformer weights storage
+    // - Quantization of weights with large spread
+    // - Better dynamic range than E4M3
+    // - 4x memory compression vs FP32
+
+    // Memory: 8 bits = 1 byte (4x FP32 in same space)
+    const MEMORY_RATIO_VS_FP32 : f32 = 8.0 / 32.0;  // 0.25
+
+    // 7. Helper Functions
+
+    fn floor_log2(x: f32) -> i8 {
+        if (x <= 0.0) { return -128; }
+        let exp : i8 = 0;
+        while (x >= 2.0) {
+            x = x / 2.0;
+            exp = exp + 1;
+        }
+        while (x < 1.0) {
+            x = x * 2.0;
+            exp = exp - 1;
+        }
+        return exp;
+    }
+
+    fn pow2(exp: f64) -> f64 {
+        if (exp == 0.0) { return 1.0; }
+        if (exp < 0.0) { return 1.0 / pow2(-exp); }
+
+        let result = 1.0;
+        let base = 2.0;
+        let e = exp as i8;
+
+        while (e > 0) {
+            if (e % 2 == 1) {
+                result = result * base;
+            }
+            base = base * base;
+            e = e / 2;
+        }
+        return result;
+    }
+
+    // 8. Special Value Helpers
+
+    fn is_zero(fp: FP8E5M2) -> bool {
+        return fp.raw == 0;
+    }
+
+    fn is_inf(fp: FP8E5M2) -> bool {
+        const exp_biased = ((fp.raw >> 2) & 0x1F) as u8;
+        const mant = (fp.raw & 0x03) as u8;
+        return exp_biased == EXP_MAX && mant == 0;
+    }
+
+    fn is_nan(fp: FP8E5M2) -> bool {
+        const exp_biased = ((fp.raw >> 2) & 0x1F) as u8;
+        const mant = (fp.raw & 0x03) as u8;
+        return exp_biased == EXP_MAX && mant != 0;
+    }
+
+    fn is_finite(fp: FP8E5M2) -> bool {
+        return !is_inf(fp) && !is_nan(fp);
+    }
+
+    // TDD-Inside-Spec: Tests and Invariants for FP8E5M2
+
+    test fp8_e5m2_decode_zero
+        given fp = FP8E5M2{ raw = 0 }
+        when value = decode(fp)
+        then value == 0.0
+
+    test fp8_e5m2_encode_zero_roundtrip
+        given original = 0.0
+        and   encoded = encode(original)
+        and   decoded = decode(encoded)
+        then decoded == original
+
+    test fp8_e5m2_encode_positive_value
+        given original = 1.0
+        and   encoded = encode(original)
+        and   decoded = decode(encoded)
+        then abs(decoded - 1.0) < 0.2
+
+    test fp8_e5m2_bits_sum_correct
+        given total = SIGN_BITS + EXP_BITS + MANT_BITS
+        then total == BITS
+
+    test fp8_e5m2_max_finite_positive
+        given max_val = max_finite()
+        then max_val > 0.0
+
+    test fp8_e5m2_min_positive_greater_than_zero
+        given min_pos = min_positive()
+        then min_pos > 0.0
+
+    test fp8_e5m2_epsilon_positive
+        given eps = epsilon()
+        then eps > 0.0
+
+    test fp8_e5m2_memory_ratio_vs_fp32
+        given ratio = MEMORY_RATIO_VS_FP32
+        then abs(ratio - 0.25) < 0.01
+
+    test fp8_e5m2_validate_format_success
+        given valid = validate_format()
+        then valid == true
+
+    test fp8_e5m2_encode_negative
+        given original = -1.5
+        and   encoded = encode(original)
+        and   decoded = decode(encoded)
+        then decoded < 0.0
+
+    test fp8_e5m2_encode_inf_positive
+        given original = 1000000.0
+        and   encoded = encode(original)
+        then is_inf(encoded) == true
+
+    test fp8_e5m2_decode_inf_positive
+        given fp = FP8E5M2{ raw = INF_POS }
+        when value = decode(fp)
+        then value == std.math.inf(f32)
+
+    test fp8_e5m2_encode_inf_negative
+        given original = -1000000.0
+        and   encoded = encode(original)
+        then is_inf(encoded) == true
+
+    test fp8_e5m2_decode_inf_negative
+        given fp = FP8E5M2{ raw = INF_NEG }
+        when value = decode(fp)
+        then value == -std.math.inf(f32)
+
+    test fp8_e5m2_encode_nan
+        given original = 0.0 / 0.0
+        and   encoded = encode(original)
+        then is_nan(encoded) == true
+
+    test fp8_e5m2_decode_nan
+        given fp = FP8E5M2{ raw = NAN }
+        when value = decode(fp)
+        then value != value
+
+    test fp8_e5m2_is_zero_true
+        given fp = FP8E5M2{ raw = 0 }
+        then is_zero(fp) == true
+
+    test fp8_e5m2_is_zero_false
+        given fp = FP8E5M2{ raw = 0x10 }
+        then is_zero(fp) == false
+
+    test fp8_e5m2_is_inf_true
+        given fp = FP8E5M2{ raw = INF_POS }
+        then is_inf(fp) == true
+
+    test fp8_e5m2_is_inf_false
+        given fp = FP8E5M2{ raw = 0x7F }
+        then is_inf(fp) == false
+
+    test fp8_e5m2_is_nan_true
+        given fp = FP8E5M2{ raw = NAN }
+        then is_nan(fp) == true
+
+    test fp8_e5m2_is_finite_true_normal
+        given fp = FP8E5M2{ raw = 0x40 }
+        then is_finite(fp) == true
+
+    test fp8_e5m2_is_finite_false_inf
+        given fp = FP8E5M2{ raw = INF_POS }
+        then is_finite(fp) == false
+
+    test fp8_e5m2_is_finite_false_nan
+        given fp = FP8E5M2{ raw = NAN }
+        then is_finite(fp) == false
+
+    test fp8_e5m2_exp_bias_is_15
+        then EXP_BIAS == 15
+
+    invariant fp8_e5m2_bits_constant
+        assert BITS == 8
+
+    invariant fp8_e5m2_sign_bits_is_one
+        assert SIGN_BITS == 1
+
+    invariant fp8_e5m2_exp_bits_is_five
+        assert EXP_BITS == 5
+
+    invariant fp8_e5m2_mant_bits_is_two
+        assert MANT_BITS == 2
+
+    invariant fp8_e5m2_max_finite_ge_min_positive
+        assert max_finite() >= min_positive()
+
+    invariant fp8_e5m2_epsilon_less_than_min_positive
+        assert epsilon() <= min_positive()
+
+    invariant fp8_e5m2_exp_bias_positive
+        assert EXP_BIAS > 0
+
+    invariant fp8_e5m2_encode_preserves_zero
+        assert encode(0.0).raw == 0
+
+    invariant fp8_e5m2_inf_values_correct
+        assert (INF_POS & 0x80) == 0 and (INF_NEG & 0x80) != 0
+
+    invariant fp8_e5m2_pow2_identity
+        assert pow2(0.0) == 1.0
+
+    invariant fp8_e5m2_pow2_positive_base
+        given x = 8.0
+        then abs(pow2(x) - 256.0) < 0.01
+
+    bench fp8_e5m2_encode_latency
+        measure: nanoseconds to encode(1.0)
+        target: < 100ns
+
+    bench fp8_e5m2_decode_latency
+        measure: nanoseconds to decode(FP8E5M2{raw = 0x40})
+        target: < 50ns
+
+    bench fp8_e5m2_encode_decode_roundtrip
+        measure: nanoseconds to encode(1.0) and decode(encode(1.0))
+        target: < 150ns
+
+    bench fp8_e5m2_is_inf_latency
+        measure: nanoseconds to is_inf(FP8E5M2{raw = INF_POS})
+        target: < 20ns
+}

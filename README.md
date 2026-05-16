@@ -164,6 +164,23 @@ Cost breakdown for MAX-TRUE: 32 TT tiles × €70 = €2,240 + €100 PCB + €5
 
 `phi^2 + phi^-2 = 3 · gamma = phi^-3 · C = phi^-1 · G = pi^3 gamma^2 / phi · QUANTUM BRAIN 1:1 SILICON · 3-STRAND DNA · TRI NET · DOI 10.5281/zenodo.19227877 · NEVER STOP`
 
+## 🏆 Competitive Differentiators — No Competitor Has All Ten
+
+| # | Differentiator | This Chip (γ-surface) | Hailo-8 | MediaTek D9400 NPU890 | QC Cloud AI 100 Ultra | Axelera Metis M.2 | Google Coral Edge TPU |
+|---|----------------|-----------------------|---------|---------------------|---------------------|-------------------|-------------------|
+| 1 | Native ternary {-1,0,+1} MAC | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 2 | On-chip BLAKE3 receipt signer | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 3 | POST via φ²+φ⁻²=3 Lucas chain | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 4 | 0 DSP / 0 new `*` (R-SI-1) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 5 | BitNet b1.58 ternary MLP | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 6 | RING27 3³ ternary memory | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 7 | Trinity 9-op ternary ALU (t27 ISA) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 8 | On-chip BPB / cross-entropy counter | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 9 | Apache-2.0 + fully open PDK (SKY130A) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 10 | DOI-anchored + Coq-verified (297 Qed + 141 Admitted) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+**Result:** All competitors miss at least two of these critical differentiators.
+
 ---
 
 ## 🟢 Bazaar Doctrine · Green AI Manifesto

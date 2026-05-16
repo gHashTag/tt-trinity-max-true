@@ -102,6 +102,7 @@ project:
     - "holo_lut_pe.v"
     - "crown47_rom.v"
     - "crown47_rom_8bit.v"
+    - "datalog_engine_mini.v"  # Gap-3 CLARA Datalog forward-chain engine (16 clauses, O(n))
 
 pinout:
   ui[0]: "load_mode (0=canonical 0x47C0 default, 1=packet path + status_byte)"

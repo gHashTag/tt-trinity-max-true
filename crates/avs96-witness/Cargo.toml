@@ -1,0 +1,10 @@
+[package]
+name = "avs96-witness"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "AVS-96 Dopamine witness for Wave 45 (W-108-G)"
+authors = ["Vasilev Dmitrii <admin@t27.ai>"]
+
+[lib]
+path = "src/lib.rs"

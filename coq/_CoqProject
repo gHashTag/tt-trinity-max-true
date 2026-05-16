@@ -1,0 +1,13 @@
+-R . T27
+Kernel/Trit.v
+Kernel/Phi.v
+Kernel/PhiFloat.v
+Kernel/Semantics.v
+Kernel/KernelSpec.v
+Theorems/TernarySufficiency.v
+Theorems/PhiDistance.v
+Theorems/GenIdempotency.v
+IGLA/RMarker.v
+
+# IGLA RACE proofs (trios-coq integration)
+# These are imported from ../trios-coq/ for verification

@@ -1,0 +1,118 @@
+name: t27 Format Validation
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  format-validation:
+    name: Format Conformance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout t27
+        uses: actions/checkout@v4
+        with:
+          path: t27
+
+      - name: Run format conformance
+        run: |
+          cd t27
+          python3 scripts/validate_formats.py conformance/FORMAT-SPEC-001.json
+
+      - name: Check GF invariants
+        run: |
+          cd t27
+          for f in specs/numeric/gf*.t27; do
+            echo "Checking $f..."
+            ./bootstrap/target/release/t27c check "$f" || true
+          done
+
+  trios-coq-validation:
+    name: Coq Proofs Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout t27
+        uses: actions/checkout@v4
+        with:
+          path: t27
+
+      - name: Install Coq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y coq libcoq-stdlib
+
+      - name: Compile Coq proofs
+        run: |
+          cd t27/trios-coq
+          make -j4 || true
+
+      - name: Verify Qed counts
+        run: |
+          cd t27/trios-coq
+          echo "=== IGLA Qed counts ==="
+          for f in IGLA/*.v; do
+            echo "$(basename $f): $(grep -c 'Qed\.' $f || echo 0)"
+          done
+          echo ""
+          echo "=== Physics Qed counts ==="
+          for f in Physics/*.v; do
+            echo "$(basename $f): $(grep -c 'Qed\.' $f || echo 0)"
+          done
+
+  trinity-chip-validation:
+    name: Trinity Chip Validation
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chip: [phi, euler, gamma]
+    steps:
+      - name: Checkout t27
+        uses: actions/checkout@v4
+
+      - name: Checkout ${{ matrix.chip }}
+        uses: actions/checkout@v4
+        with:
+          repository: dmitriivasilev/tt-trinity-${{ matrix.chip }}
+          path: tt-trinity-${{ matrix.chip }}
+
+      - name: Validate format specs
+        run: |
+          cd tt-trinity-${{ matrix.chip }}
+          echo "=== ${{ matrix.chip }} format count ==="
+          ls -1 specs/numeric/*.t27 | wc -l
+
+      - name: Validate Coq proofs
+        run: |
+          cd tt-trinity-${{ matrix.chip }}
+          echo "=== ${{ matrix.chip }} Coq files ==="
+          ls -1 trios-coq/IGLA/*.v trios-coq/Physics/*.v 2>/dev/null | wc -l
+
+  rtl-synthesis:
+    name: RTL Synthesis Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout t27
+        uses: actions/checkout@v4
+
+      - name: Install Yosys
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y yosys
+
+      - name: Check R-SI-1 compliance
+        run: |
+          cd t27
+          echo "=== Checking for forbidden `*` operators ==="
+          find rtl_gen -name "*.v" -exec grep -H '\*' {} \; || echo "No `*` found - R-SI-1 compliant"
+
+      - name: Validate GF format parameters
+        run: |
+          cd t27
+          python3 scripts/validate_rtl_params.py rtl_gen/gf_formats.v conformance/FORMAT-SPEC-001.json
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

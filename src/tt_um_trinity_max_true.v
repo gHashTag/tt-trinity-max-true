@@ -513,6 +513,29 @@ module tt_um_trinity_max_true (
         .byte_out (crown_byte_raw)
     );
 
+
+    // ==================================================================
+    // CLARA Gap-2: k3_alu — native Kleene K3 ternary ALU
+    // 3 ops: NOT(a) / AND(a,b) / OR(a,b) over {F=-1, U=0, T=+1}
+    // 2-bit trit encoding: 10=F, 00=U, 01=T
+    // Inputs from free (unused) pins:
+    //   uio_in[3:2] = trit-a  (was unused within existing ff i/f)
+    //   uio_in[5:4] = trit-b
+    //   ui_in[5:4]  = op (00=NOT, 01=AND, 10=OR, 11=rsv)
+    // Result exposed on uio_out[5:4] (observability, non-blocking).
+    // t27 spec: gHashTag/t27/specs/ar/ternary_logic.t27
+    // R-SI-1 clean. Pure Verilog-2005. ~30 cells.
+    // ==================================================================
+    wire [1:0] k3_result;
+    wire       k3_valid;
+    k3_alu u_k3_alu (
+        .a      (uio_in[3:2]),
+        .b      (uio_in[5:4]),
+        .op     (ui_in[5:4]),
+        .result (k3_result),
+        .valid  (k3_valid)
+    );
+
     wire [7:0] uio_legacy =
         crown_mode              ? 8'h00 :
         (ui_in[0] && post_done) ? status_byte :
@@ -520,8 +543,9 @@ module tt_um_trinity_max_true (
 
     assign uo_out  = crown_mode ? crown_byte_raw
                                 : (final_result[7:0]  | input_echo[7:0]);
-    // uio[7:4] keeps legacy mux; uio[3:0] carries TRI NET friend/foe.
-    assign uio_out = {uio_legacy[7:4], ff_valid, ff_friend, 1'b0, ff_tx};
+    // uio[7:6] = legacy[7:6]; uio[5:4] = k3_result (Gap-2 CLARA K3 ALU observability)
+    // uio[3:0] = TRI NET friend/foe (unchanged)
+    assign uio_out = {uio_legacy[7:6], k3_result[1:0], ff_valid, ff_friend, 1'b0, ff_tx};
     // uio[1] is RX bit (input); all others output.
     assign uio_oe  = 8'b1111_1101;
 
@@ -529,6 +553,7 @@ module tt_um_trinity_max_true (
     wire _unused = &{1'b0, mesh_dbg_tile0, ena, uio_in,
                      mesh_rcpt_checksum, mesh_rcpt_job_id,
                      mesh_rcpt_tile_id, mesh_rcpt_valid,
+                     k3_valid,
                      lucas_val, vsa_done, vsa_c,
                      crc_raw, crc_final,
                      hwrng_word[14:0],
@@ -546,6 +571,6 @@ module tt_um_trinity_max_true (
                      nca_in_band, nca_popcount,
                      seed_safe, seed_replaced,
                      phi_dist[14:0],
-                     ui_in[7:4], 1'b0};
+                     ui_in[7:6], ui_in[3], 1'b0};
 
 endmodule

@@ -31,9 +31,9 @@ old clones/forks/PRs continue to work.
 
 # TRI-1 MAX-TRUE — FLAGSHIP Trinity GF16 32-cell + Full SUPER-CROWN
 
-[![Test](../../actions/workflows/test.yaml/badge.svg)](../../actions/workflows/test.yaml)
-[![FPGA](../../actions/workflows/fpga.yaml/badge.svg)](../../actions/workflows/fpga.yaml)
-[![GDS](../../actions/workflows/gds.yaml/badge.svg)](../../actions/workflows/gds.yaml)
+[![Test](https://github.com/gHashTag/tt-trinity-gamma/actions/workflows/test.yaml/badge.svg)](https://github.com/gHashTag/tt-trinity-gamma/actions/workflows/test.yaml)
+[![FPGA](https://github.com/gHashTag/tt-trinity-gamma/actions/workflows/fpga.yaml/badge.svg)](https://github.com/gHashTag/tt-trinity-gamma/actions/workflows/fpga.yaml)
+[![GDS](https://github.com/gHashTag/tt-trinity-gamma/actions/workflows/gds.yaml/badge.svg)](https://github.com/gHashTag/tt-trinity-gamma/actions/workflows/gds.yaml)
 
 **Flagship SKU of the TRI-1 Triad (Nano / Mid / MAX-TRUE).** W15-TT-E
 submission for TTSKY26b, 8×4 TT tiles (largest allowed digital

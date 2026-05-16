@@ -634,18 +634,14 @@ module tt_um_trinity_max_true (
 
     // uio_out:
     //   [7:4] = legacy upper nibble (CANONICAL_HI on reset = 4'h4)
-    //   [3]   = w_tx (SYNC strobe, layer-frozen gated)
-    //   [2]   = s_tx
-    //   [1]   = e_tx
-    //   [0]   = n_tx
-    assign uio_out = {uio_legacy[7:4], d2d_w_tx, d2d_s_tx, d2d_e_tx, d2d_n_tx};
+    //   [3:0] = legacy lower nibble (CANONICAL_LO on reset = 4'h7) OR D2D TX (live mode)
+    assign uio_out = !ui_in[0] ? uio_legacy : {uio_legacy[7:4], d2d_w_tx, d2d_s_tx, d2d_e_tx, d2d_n_tx};
 
     // uio_oe:
-    //   [7:4] = 0 (D2D RX inputs from external)
+    //   All outputs enabled for TG-TRIAD-X canonical mode (load_mode=0)
+    //   [7:4] = 1 (legacy upper nibble outputs)
     //   [3:0] = 1 (D2D TX outputs)
-    //   Exception: keep friend/foe bit [1] as output when not in D2D mode
-    //   For simplicity: [7:4]=input, [3:0]=output → 8'b0000_1111
-    assign uio_oe  = 8'b0000_1111;
+    assign uio_oe  = !ui_in[0] ? 8'hFF : 8'b0000_1111;
 
     // Silence lint
     wire _unused = &{1'b0, mesh_dbg_tile0, ena,

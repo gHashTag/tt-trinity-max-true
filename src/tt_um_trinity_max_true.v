@@ -513,6 +513,43 @@ module tt_um_trinity_max_true (
         .byte_out (crown_byte_raw)
     );
 
+
+    // ==================================================================
+    // CLARA Gap-5: Explainability Unit (DARPA TA1.2)
+    // 5-tuple proof-trace emitter, 10×20-bit shift register.
+    // trace_out[1:0] serialised on uio[7:6] (2 bits/cycle).
+    // overflow → restraint_ctrl Gap-4 (wire preserved for future use).
+    // R-SI-1 clean. ~180 cells. DOI 10.5281/zenodo.19227877
+    // ==================================================================
+    wire [1:0]  clara_trace_out;
+    wire        clara_overflow;
+    wire [3:0]  clara_step_count;
+    wire [19:0] clara_head_record;
+
+    // Drive inputs from mesh result fields as a demo proof-trace source.
+    // step_id      = rcpt_job_id[3:0]
+    // premise_id_a = rcpt_checksum[7:4]
+    // premise_id_b = rcpt_checksum[3:0]
+    // rule_id      = {2'b0, rcpt_tile_id}
+    // conclusion   = mesh_result[3:0]
+    explainability_unit #(.MAX_STEPS(10)) u_clara_expl (
+        .clk           (clk),
+        .rst_n         (rst_n),
+        .push          (mesh_rcpt_valid),
+        .step_id       (mesh_rcpt_job_id[3:0]),
+        .premise_id_a  (mesh_rcpt_checksum[7:4]),
+        .premise_id_b  (mesh_rcpt_checksum[3:0]),
+        .rule_id       ({2'b00, mesh_rcpt_tile_id}),
+        .conclusion    (mesh_result[3:0]),
+        .overflow      (clara_overflow),
+        .trace_out     (clara_trace_out),
+        .step_count_out(clara_step_count),
+        .head_record   (clara_head_record)
+    );
+
+    // overflow feeds restraint_ctrl Gap-4 (no restraint_ctrl module yet —
+    // wire preserved; lint-silence below keeps R-SI-1 clean).
+
     wire [7:0] uio_legacy =
         crown_mode              ? 8'h00 :
         (ui_in[0] && post_done) ? status_byte :
@@ -521,7 +558,7 @@ module tt_um_trinity_max_true (
     assign uo_out  = crown_mode ? crown_byte_raw
                                 : (final_result[7:0]  | input_echo[7:0]);
     // uio[7:4] keeps legacy mux; uio[3:0] carries TRI NET friend/foe.
-    assign uio_out = {uio_legacy[7:4], ff_valid, ff_friend, 1'b0, ff_tx};
+    assign uio_out = {clara_trace_out, uio_legacy[5:4], ff_valid, ff_friend, 1'b0, ff_tx};
     // uio[1] is RX bit (input); all others output.
     assign uio_oe  = 8'b1111_1101;
 
@@ -546,6 +583,8 @@ module tt_um_trinity_max_true (
                      nca_in_band, nca_popcount,
                      seed_safe, seed_replaced,
                      phi_dist[14:0],
-                     ui_in[7:4], 1'b0};
+                     ui_in[7:4],
+                     clara_overflow, clara_step_count, clara_head_record,
+                     1'b0};
 
 endmodule

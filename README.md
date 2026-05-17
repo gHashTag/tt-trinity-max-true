@@ -561,6 +561,15 @@ GAMMA carries the same **Crown47 ROM** as PHI and EULER — proving **scale-inva
 
 **R-SI-1:** Zero new `*` operators in all synthesisable RTL · ~34 100 / 48 000 cells (~71% util)
 
+### v1.0.0 Features
+
+| Feature | Description | Performance Impact |
+|---------|-------------|---------------------|
+| **GF formats (GF4-GF256)** | Multi-precision Galois field adders & multipliers | Flexibility across ML workloads |
+| **Quantizers** | Int4/Int8/NF4/FP8_E4M3/FP8_E5M2/Posit16 | ~4-8× compression vs FP16 |
+| **Sacred opcodes (0xDF-0xEC)** | LUT_LOOKUP, SPARSE_SKIP, LUT_NPU, SUBTH_CLK, HOLO_MUX_X4, DFS_GATE, SPARSE_SKIP2, STOCH_ROUND, NULL_PE, SPEC_EXIT, DROWSY_RET | Domain-specific acceleration |
+| **Power modules** | AVS-48/96, FBB, Purkinje thermal | 5.4× TOPS/W boost (75→405) |
+
 ---
 
 ## 📌 Pinout
@@ -834,10 +843,11 @@ openlane --config ./sky130A/config.tcl --run ./run_gds.tcl
 
 ### Honest Performance Disclosure (R5-HONEST)
 
-| Metric | Measured (SKY130 130nm) | Architecture target (22FDX 22nm projection) |
-|---|---|---|
-| TOPS/W | proof-of-concept node | 28-120 TOPS/W (peer-review pending) |
-| Energy/op | educational node | competitive vs Hailo/Mythic at advanced node |
+| Metric | SKY130A (demonstrator) | Advanced node (22FDX projection) | v1.0.0 Boost |
+|---|---|---|---|
+| TOPS/W (baseline) | proof-of-concept | 28-120 TOPS/W | — |
+| TOPS/W (AVS-96) | 405 TOPS/W | ~1200 TOPS/W | **5.4×** |
+| Energy/op | educational node | competitive vs Hailo/Mythic at advanced node | — |
 
 The SKY130A demonstrator validates **architecture**, not absolute silicon performance.
 

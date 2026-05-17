@@ -253,7 +253,7 @@ module lane_l_precheck (
             $display("ERROR: precheck_valid asserted in state %0d", state);
         end
     end
-    // synthesis on
+    // synthesis translate_on
 
 endmodule
 

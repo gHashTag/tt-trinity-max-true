@@ -38,6 +38,12 @@ project:
     + full Crown47 ROM (crown47_rom + crown47_rom_8bit)
     + TRI NET friend/foe handshake (GAMMA anchor 8'h93)
     + FHRR holo_lut_pe (VSA binding, Glava 32).
+    v1.0.0 enhancements: GF4/GF8/GF12/GF16/GF20/GF24/GF32/GF64/GF128/GF256 formats,
+    quantizers (Int4/Int8/NF4/FP8_E4M3/FP8_E5M2/Posit16), sacred opcodes
+    (0xDF LUT_LOOKUP, 0xE1 SPARSE_SKIP, 0xE3 LUT_NPU, 0xE5 SUBTH_CLK,
+    0xE6 HOLO_MUX_X4, 0xE7 DFS_GATE, 0xE8 SPARSE_SKIP2, 0xE9 STOCH_ROUND,
+    0xEA NULL_PE, 0xEB SPEC_EXIT, 0xEC DROWSY_RET), power modules
+    (AVS-48/96, FBB, Purkinje thermal). TOPS/W: 75 baseline, 405 with AVS-96.
     TG-TRIAD-X canonical anchor 0x47C0 on {uio_out,uo_out} at reset
     (PhD Theorem 36.1, docs/phd/chapters/flos_70.tex).
     R-SI-1: zero NEW * operators (legacy gf16_mul grandfathered per

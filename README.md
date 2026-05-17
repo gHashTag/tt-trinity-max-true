@@ -871,4 +871,16 @@ Fork it. Improve it. Build with it.
 
 ---
 
+## 🔗 TRI-NET Cross-References
+
+| Component | Repository | Tiles | CLARA Gaps |
+|-----------|------------|-------|------------|
+| **φ-anchor** | [tt-trinity-phi](https://github.com/gHashTag/tt-trinity-phi) | 1×1 | 1/10 |
+| **e-engine** | [tt-trinity-euler](https://github.com/gHashTag/tt-trinity-euler) | 8×2 | 10/10 |
+| **γ-surface** | [tt-trinity-gamma](https://github.com/gHashTag/tt-trinity-gamma) (this repo) | 8×4 | 10/10 |
+
+All three dies emit the same canonical `0x47C0` on power-up (TG-TRIAD-X cross-die anchor).
+
+---
+
 > φ² + φ⁻² = 3 · γ = 0.5772... · Trinity S³AI · TRI NET · **NEVER STOP**

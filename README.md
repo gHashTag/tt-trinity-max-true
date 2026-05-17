@@ -546,6 +546,25 @@ Glava 36 (Theorem 36.1 — TG-TRIAD-X) proves that a multi-die holographic subst
 
 ---
 
+## 🏆 Competitive Differentiators — No Competitor Has All Ten
+
+| # | Differentiator | φ-anchor | e-engine | γ-surface | Hailo-8 | MediaTek NPU | QC AI 100 |
+|---|----------------|----------|----------|-----------|---------|--------------|-----------|
+| 1 | Native ternary {-1,0,+1} MAC | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| 2 | On-chip BLAKE3 receipt signer | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| 3 | POST via φ²+φ⁻²=3 Lucas chain | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| 4 | 0 DSP / 0 new `*` (R-SI-1) | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| 5 | BitNet b1.58 ternary MLP | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| 6 | RING27 3³ ternary memory | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| 7 | Trinity 9-op ternary ALU (t27 ISA) | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| 8 | On-chip BPB / cross-entropy | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| 9 | Apache-2.0 + fully open PDK (SKY130A) | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| 10 | DOI-anchored + Coq-verified (297 Qed) | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+
+**Result:** All competitors miss at least FOUR critical capabilities. TRI-NET delivers ALL TEN across three sacred constants.
+
+---
+
 ## ⚙️ Specifications
 
 | Parameter | Value |

@@ -113,6 +113,55 @@ project:
     - "proof_trace_writer.v"
     - "sat_solver_mini.v"
     - "audit_log_ring_buffer.v"
+    # v1.0.0: GF formats (GF4-GF256)
+    - "gf_formats.v"
+    - "gf4_add.v"
+    - "gf4_mul.v"
+    - "gf8_add.v"
+    - "gf8_mul.v"
+    - "gf12_add.v"
+    - "gf12_mul.v"
+    - "gf20_add.v"
+    - "gf20_mul.v"
+    - "gf24_add.v"
+    - "gf24_mul.v"
+    - "gf32_add.v"
+    - "gf32_mul.v"
+    - "gf64_add.v"
+    - "gf64_mul.v"
+    - "gf128_add.v"
+    - "gf128_mul.v"
+    - "gf256_add.v"
+    - "gf256_mul.v"
+    # v1.0.0 quantizers (Int4/Int8/NF4/FP8_E4M3/FP8_E5M2/Posit16)
+    - "int4_quantizer.v"
+    - "int8_quantizer.v"
+    - "nf4_quantizer.v"
+    - "fp8_e4m3_quantizer.v"
+    - "fp8_e5m2_quantizer.v"
+    - "posit16_quantizer.v"
+    # v1.0.0 power modules (AVS-48/96, FBB, Purkinje thermal)
+    - "avs_controller_48.v"
+    - "avs_controller_96.v"
+    - "avs_reconf.v"
+    - "fbb_active_path.v"
+    - "purkinje_thermal_gate.v"
+    # v1.0.0 sacred opcodes (0xDF, 0xE1-0xED)
+    - "lane_l_precheck.v"     # OP_LUT_LOOKUP 0xDF
+    - "sparse_skip.v"         # OP_SPARSE_SKIP 0xE1
+    - "lut_npu_81_entry.v"    # OP_LUT_NPU 0xE3
+    - "subth_clk.v"           # OP_SUBTH_CLK 0xE5
+    - "holo_mux_x4.v"         # OP_HOLO_MUX_X4 0xE6
+    - "dfs_gate.v"            # OP_DFS_GATE 0xE7
+    - "sparse_mask.v"         # OP_SPARSE_SKIP2 0xE8
+    - "stoch_round.v"         # OP_STOCH_ROUND 0xE9
+    - "null_pe.v"             # OP_NULL_PE 0xEA
+    - "spec_exit.v"           # OP_SPEC_EXIT 0xEB
+    - "drowsy_ret.v"          # OP_DROWSY_RET 0xEC
+    # v1.0.0 converters
+    - "gf16_to_fp16.v"
+    - "gf16_to_posit16.v"
+    - "gf32_to_fp32.v"
 
 pinout:
   ui[0]: "load_mode (0=canonical 0x47C0 default, 1=packet path + status_byte)"

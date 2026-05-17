@@ -8,9 +8,9 @@
 
 > **φ² + φ⁻² = 3** · γ = 0.5772... (Euler-Mascheroni) · DOI [10.5281/zenodo.19227877](https://doi.org/10.5281/zenodo.19227877)
 
-**Largest chip of the TRI-1 Triad.** 32 tiles (8×4) of SkyWater SKY130A silicon — the world’s first open-PDK neuromorphic chip with **8 cortical columns**, **20-PE GF16 mesh**, **24 SUPER-CROWN modules**, **D2D holographic mesh**, and the full **Crown47 ROM** encoding 47 fundamental constants of physics.
+**Largest chip of the TRI-1 Triad.** 32 tiles (8×4) of SkyWater SKY130A silicon — the world's first open-PDK neuromorphic chip with **8 cortical columns**, **20-PE GF16 mesh**, **24 SUPER-CROWN modules**, **D2D holographic mesh**, and the full **Crown47 ROM** encoding 47 fundamental constants of physics.
 
-> *“The first chip where physics is the layout.”*
+> *"The first chip where physics is the layout."*
 
 ---
 
@@ -66,7 +66,7 @@ Kleene K3 logic over trit alphabet **{FALSE=-1, UNKNOWN=0, TRUE=+1}**, encoded a
 | OR | `2'b10` | max(a,b) | UNKNOWN ∨ TRUE = TRUE |
 | RSV | `2'b11` | *reserved* | valid=0 |
 
-**Why K3?** Classical 2-valued logic cannot represent epistemic uncertainty ("I don’t know"). K3 maps directly to the Trinity cognitive architecture’s three-valued belief states (Glava 31, t27 ISA). GAMMA is the **first open-PDK chip with native silicon K3 logic** — no competitor (Hailo-8, Axelera Metis, Google Coral) has this.
+**Why K3?** Classical 2-valued logic cannot represent epistemic uncertainty ("I don't know"). K3 maps directly to the Trinity cognitive architecture's three-valued belief states (Glava 31, t27 ISA). GAMMA is the **first open-PDK chip with native silicon K3 logic** — no competitor (Hailo-8, Axelera Metis, Google Coral) has this.
 
 ```verilog
 // t27 spec: gHashTag/t27/specs/ar/ternary_logic.t27
@@ -77,7 +77,7 @@ Kleene K3 logic over trit alphabet **{FALSE=-1, UNKNOWN=0, TRUE=+1}**, encoded a
 //   F∧T=F   F∧U=F   F∧F=F
 ```
 
-> 🔗 **CLARA Gap-2 claim:** *“No competing AI-edge chip implements K3 Kleene three-valued logic as native silicon gates.”* Falsification: produce a tapeout with native K3 AND/OR/NOT in open PDK with lower cell count.
+> 🔗 **CLARA Gap-2 claim:** *"No competing AI-edge chip implements K3 Kleene three-valued logic as native silicon gates."* Falsification: produce a tapeout with native K3 AND/OR/NOT in open PDK with lower cell count.
 
 ---
 
@@ -156,17 +156,171 @@ Popcount is the critical inner loop of VSA binding (Glava 32): `HD(a,b) = popcou
 
 ---
 
-## 🔢 Number Format Summary
+## 🔬 Extended Number Systems — From Branch PRs
 
-| Format | Width | Range / Precision | R-SI-1 | Primary use | Module |
-|--------|-------|-------------------|--------|-------------|--------|
-| **GF(2⁴) / GF16** | 4-bit | exact field, 15 elements | ✅ | VSA, MAC mesh | `gf16_mul.v` |
-| **K3 Balanced Ternary** | 2-bit trit | {-1, 0, +1} logic | ✅ | Cognitive ALU, K3 logic | `k3_alu.v` |
-| **Q8.8 Pseudo-Float** | 24-bit | ~10⁻³⁸..10³⁸, 0.39%/LSB | ✅ | Physics constants ROM | `crown47_rom.v` |
-| **BitNet b1.58** | 2-bit trit | {-1, 0, +1} weights | ✅ | Neural MLP weights | `bitnet_encoder.v` |
-| **Packed Popcount** | 8/16-bit | Hamming 0..N | ✅ | VSA similarity, sparsity | `gf16_popcount16.v` |
+Beyond the 5 primary silicon formats, GAMMA uses **4 additional numeric encodings** across its Rust witness crates, DARPA CLARA symbolic modules, and audit infrastructure. All merged in PRs #36–#67.
 
-> **Zero `*` operators across all five formats.** All arithmetic is XOR, case-statement, or shift-based. This is the R-SI-1 formal contract with Trinity SAI.
+### 6️⃣ Q1.15 Fixed-Point — Sacred Physics Constants
+
+> *Rust crates: `drowsy-ret-witness`, `rbb-witness`, `fbb-active-witness`* — Wave 43–47 (PR [#36](https://github.com/gHashTag/tt-trinity-gamma/pull/36), [#38](https://github.com/gHashTag/tt-trinity-gamma/pull/38), [#44](https://github.com/gHashTag/tt-trinity-gamma/pull/44))
+
+16-bit Q1.15 fixed-point used to encode γ-power constants derived from Sacred ROM cell B007 (γ = φ⁻³):
+
+```
+ Q1.15 format: 1 sign bit + 15 fractional bits
+ Range:        [-1.0 .. +1.0]
+ LSB:          2⁻¹⁵ = 3.05e-5
+
+ γ = φ⁻³ ≈ 0.23607 → GAMMA_Q15 = 0x1E35  (≡ 7733/32768 = 0.23596, error 0.047%)
+```
+
+**γ-power hierarchy** used across Wave 43–49 Rust witnesses:
+
+| Constant | Formula | BPS value | Q1.15 / usage | Wave PR |
+|----------|---------|-----------|----------------|--------|
+| γ = φ⁻³ | Sacred ROM B007 | 2360 bps | `0x1E35` | W43 [#36](https://github.com/gHashTag/tt-trinity-gamma/pull/36) |
+| γ² = φ⁻⁶ | B007 squared | 557 bps | `ETA_BPS=557` | W46 [#41](https://github.com/gHashTag/tt-trinity-gamma/pull/41) |
+| γ³ = φ⁻⁹ | B007 cubed | 132 bps | `GAMMA3_BPS=132` | W49 [#49](https://github.com/gHashTag/tt-trinity-gamma/pull/49) |
+| γ⁴ = φ⁻¹² | B007 fourth | 31 bps | `GAMMA4_BPS=31` | W44 [#38](https://github.com/gHashTag/tt-trinity-gamma/pull/38) |
+
+> **R18 LAYER-FROZEN:** All γ-powers derived from B007 — no new ROM cell added per wave.
+
+---
+
+### 7️⃣ BPS — Basis Points Integer (×10⁻⁴)
+
+> *All Wave 36–49 Rust witness crates* — PR [#25](https://github.com/gHashTag/tt-trinity-gamma/pull/25) through [#49](https://github.com/gHashTag/tt-trinity-gamma/pull/49)
+
+Physical constants and circuit properties are encoded as **integer basis points** (1 BPS = 0.01%) to avoid floating-point in Rust witnesses:
+
+```
+ BPS encoding: real_value = bps_integer / 10000.0
+
+ Examples:
+   γ  = 0.2360679...  → 2361 BPS
+   γ² = 0.0557281...  →  557 BPS
+   γ⁴ = 0.0030898...  →   31 BPS
+   η  = γ² = 5.57%    →  557 BPS  (adiabatic RC efficiency, W46)
+   V_BS/V_DD = 0.31%  →   31 BPS  (body bias ratio, W47)
+   TOPS/W lift≥0.7%   →   70 BPS  (TOPS gate, W49)
+```
+
+**Why BPS?** Avoids IEEE 754 rounding discrepancies in `cargo test` assertions. All R7 falsification witnesses use `bps ∈ [lower_bps, upper_bps]` integer band checks — no floating-point equality.
+
+---
+
+### 8️⃣ Z3 Ternary Lattice — Rust Runtime Enum
+
+> *Rust crates: `sparsity-witness`, `nullor-witness`, `spec-exit-witness`* — PR [#28](https://github.com/gHashTag/tt-trinity-gamma/pull/28), [#31](https://github.com/gHashTag/tt-trinity-gamma/pull/31), [#37](https://github.com/gHashTag/tt-trinity-gamma/pull/37)
+
+Software mirror of K3 silicon trit, used in Rust witness crates for 3-strand voting and sparsity masking:
+
+```rust
+// From crates/sparsity-witness/src/lib.rs
+pub enum Z3 { Neg1, Zero, Pos1 }
+
+// Three-strand 2-of-3 majority vote (DARPA CLARA TA1.1):
+// Inputs: magnitude_ok, grad_norm_ok, coact_entropy_ok
+// Returns true when ≥ 2 of 3 strands agree
+pub fn three_strand_vote(mag: bool, grad: bool, coact: bool) -> bool {
+    (mag as u8 + grad as u8 + coact as u8) >= 2
+}
+```
+
+**Z3 ↔ K3 silicon mapping:**
+
+| Z3 Rust variant | K3 encoding | Silicon bits | Semantics |
+|-----------------|-------------|-------------|----------|
+| `Z3::Neg1` | FALSE | `2'b10` | pruned / blocked |
+| `Z3::Zero` | UNKNOWN | `2'b00` | uncommitted |
+| `Z3::Pos1` | TRUE | `2'b01` | active / pass |
+
+---
+
+### 9️⃣ Symbolic Encodings — DARPA CLARA Inference Formats
+
+> *Files: `datalog_engine_mini.v`, `sat_solver_mini.v`, `explainability_unit.v`, `audit_log_ring_buffer.v`* — PR [#58](https://github.com/gHashTag/tt-trinity-gamma/pull/58)–[#67](https://github.com/gHashTag/tt-trinity-gamma/pull/67)
+
+The DARPA CLARA symbolic reasoning stack uses **four purpose-built bit-packed formats**, all without `*` operators:
+
+#### 9a. 21-bit Datalog/Sat Clause
+
+> *`datalog_engine_mini.v` (PR [#58](https://github.com/gHashTag/tt-trinity-gamma/pull/58)), `asp_solver_mini.v` (PR [#63](https://github.com/gHashTag/tt-trinity-gamma/pull/63))*
+
+```
+ Bits [20]    = valid
+ Bits [19:16] = head atom index (0..15)
+ Bits [15:0]  = body bitmask (16 atoms, 1 bit each)
+
+ Clause fires when: (fact_mask & body) == body AND valid
+ One inference pass = 16 parallel AND-trees (combinational, O(1))
+ Max clauses: 16 per engine instance
+```
+
+#### 9b. 24-bit SAT CNF Literal
+
+> *`sat_solver_mini.v` (PR [#67](https://github.com/gHashTag/tt-trinity-gamma/pull/67))*
+
+```
+ Bits [23]     = valid
+ Bits [22:19]  = lit2 {var[2:0], neg}  — 3-CNF literal 2
+ Bits [18:15]  = lit1 {var[2:0], neg}  — 3-CNF literal 1
+ Bits [14:11]  = lit0 {var[2:0], neg}  — 3-CNF literal 0
+ Bits [10:0]   = unused
+
+ Supports 8 variables × 16 clauses. DPLL: PROPAGATE→DECIDE→BACKTRACK→DONE.
+```
+
+#### 9c. 20-bit Proof Tuple
+
+> *`explainability_unit.v` (PR [#62](https://github.com/gHashTag/tt-trinity-gamma/pull/62)) — DARPA CLARA TA1.2*
+
+```
+ Bits [19:16] = step_id[3:0]      — inference step number (0..9)
+ Bits [15:12] = premise_id_a[3:0] — first premise atom
+ Bits [11:8]  = premise_id_b[3:0] — second premise atom
+ Bits [7:4]   = rule_id[3:0]      — rule applied
+ Bits [3:0]   = conclusion[3:0]   — derived atom
+
+ Buffer: 10 × 20-bit LIFO (newest in buf[0])
+ Serial output: trace_out[1:0] — 2 bits/cycle, 10-cycle frame, MSB-first
+ Overflow flag: 1 when >10 steps pushed (feeds restraint_ctrl)
+```
+
+#### 9d. 48-bit Audit Log Entry
+
+> *`audit_log_ring_buffer.v` (PR [#66](https://github.com/gHashTag/tt-trinity-gamma/pull/66)) — DARPA CLARA TA1 forensics*
+
+```
+ Bits [47:32] = timestamp[15:0]   — free-running 16-bit cycle counter
+ Bits [31:28] = event_type[3:0]   — event class (0=inference, 1=restraint, …)
+ Bits [27:0]  = data[27:0]        — inference result or operand payload
+
+ Ring buffer: 64 entries × 48 bits = 384 bytes on-chip
+ Read: assert rd_en × 64 cycles → dumps full audit trail via uio
+ Status: head_ptr[5:0], wrapped, buf_full, buf_empty, audit_ok
+```
+
+---
+
+## 🔢 Complete Number Format Summary
+
+| # | Format | Width | Range / Precision | Domain | Module / Crate |
+|---|--------|-------|-------------------|--------|----------------|
+| 1 | **GF(2⁴) / GF16** | 4-bit | exact field, 15 non-zero elements | RTL silicon | `gf16_mul.v` |
+| 2 | **K3 Balanced Ternary** | 2-bit trit | {-1, 0, +1} Kleene logic | RTL silicon | `k3_alu.v` |
+| 3 | **Q8.8 Pseudo-Float** | 24-bit | ~10⁻³⁸..10³⁸, 0.39%/LSB | RTL silicon | `crown47_rom.v` |
+| 4 | **BitNet b1.58** | 2-bit trit | {-1, 0, +1} weights | RTL silicon | `bitnet_encoder.v` |
+| 5 | **Packed Popcount** | 8/16-bit | Hamming 0..N | RTL silicon | `gf16_popcount16.v` |
+| 6 | **Q1.15 Fixed-Point** | 16-bit | [-1,+1], LSB=3e-5 | Rust witnesses | `drowsy-ret-witness` |
+| 7 | **BPS Integer (×10⁻⁴)** | u32 | 0..10000 (0%..100%) | Rust witnesses | all Wave crates |
+| 8 | **Z3 Ternary Lattice** | enum | {Neg1, Zero, Pos1} | Rust witnesses | `sparsity-witness` |
+| 9a | **21-bit Datalog Clause** | 21-bit | 16 atoms × 16 rules | CLARA RTL | `datalog_engine_mini.v` |
+| 9b | **24-bit SAT CNF Literal** | 24-bit | 8 vars, 3-CNF | CLARA RTL | `sat_solver_mini.v` |
+| 9c | **20-bit Proof Tuple** | 20-bit | 10 steps × 4-bit fields | CLARA RTL | `explainability_unit.v` |
+| 9d | **48-bit Audit Entry** | 48-bit | 64-entry ring, 16b timestamp | CLARA RTL | `audit_log_ring_buffer.v` |
+
+> **Zero `*` operators across all formats.** All arithmetic is XOR, case-statement, shift, or ADD. This is the R-SI-1 formal contract with Trinity SAI.
 
 ---
 
@@ -299,21 +453,26 @@ GAMMA carries the same **Crown47 ROM** as PHI and EULER — proving **scale-inva
 | `crown47_rom.v` | 47 Tegmark-31 constants (Q8.8) | Glava 35, App. A |
 | `trinity_master_fsm.v` | Master sequencer | Glava 35 |
 
+### DARPA CLARA Modules (Gap 1–10)
+
+| Module | Gap | Format | Cells | PR |
+|--------|-----|--------|-------|----|
+| `redteam_filter.v` | Gap-1 | binary thresholds | ~240 | [#61](https://github.com/gHashTag/tt-trinity-gamma/pull/61) |
+| `k3_alu.v` | Gap-2 | K3 ternary (Format 2) | ~30 | [#59](https://github.com/gHashTag/tt-trinity-gamma/pull/59) |
+| `datalog_engine_mini.v` | Gap-3 | 21-bit clause (Format 9a) | ~800 | [#58](https://github.com/gHashTag/tt-trinity-gamma/pull/58) |
+| `restraint_ctrl.v` | Gap-4 | Q1.15 φ-drift (Format 6) | ~100 | [#60](https://github.com/gHashTag/tt-trinity-gamma/pull/60) |
+| `explainability_unit.v` | Gap-5 | 20-bit proof tuple (Format 9c) | ~180 | [#62](https://github.com/gHashTag/tt-trinity-gamma/pull/62) |
+| `asp_solver_mini.v` | Gap-6 | 24-bit NAF clause (Format 9b) | ~600 | [#63](https://github.com/gHashTag/tt-trinity-gamma/pull/63) |
+| `composition_kernel.v` | Gap-7 | composite (all CLARA formats) | ~150 | [#64](https://github.com/gHashTag/tt-trinity-gamma/pull/64) |
+| `proof_trace_writer.v` | Gap-8 | 20-bit tuple + CRC32 | ~250 | [#65](https://github.com/gHashTag/tt-trinity-gamma/pull/65) |
+| `sat_solver_mini.v` | Gap-9 | 24-bit SAT literal (Format 9b) | ~500 | [#67](https://github.com/gHashTag/tt-trinity-gamma/pull/67) |
+| `audit_log_ring_buffer.v` | Gap-10 | 48-bit audit entry (Format 9d) | ~400 | [#66](https://github.com/gHashTag/tt-trinity-gamma/pull/66) |
+
 ### Additional Modules
 | Module | Function |
 |--------|----------|
 | `d2d_holo_mesh.v` | D2D 4-port router |
 | `trinity_gf16_tile.v` | GF16 tile wrapper |
-| `k3_alu.v` | K3 ternary logic (CLARA Gap-2) |
-| `composition_kernel.v` | Symbolic composition |
-| `asp_solver_mini.v` | ASP mini-solver |
-| `datalog_engine_mini.v` | Datalog engine |
-| `sat_solver_mini.v` | SAT solver mini (44 kB) |
-| `redteam_filter.v` | Red-team safety filter |
-| `restraint_ctrl.v` | Restraint controller |
-| `explainability_unit.v` | XAI unit |
-| `audit_log_ring_buffer.v` | Audit ring buffer |
-| `proof_trace_writer.v` | Proof trace writer |
 | `trinity_usb3_fifo_bridge.v` | USB3 FIFO bridge |
 
 **R-SI-1:** Zero new `*` operators in all synthesisable RTL · ~34 100 / 48 000 cells (~71% util)
@@ -352,7 +511,7 @@ After reset: `{uio_out[3:0], uo_out}` = **0x47C0** (φ-anchor, Q8.8 domain)
 
 ### GAMMA implements PhD Glava 36 — Holographic Brain
 
-> *“One brain, many dies, one frozen hash.”*
+> *"One brain, many dies, one frozen hash."*
 
 Glava 36 (Theorem 36.1 — TG-TRIAD-X) proves that a multi-die holographic substrate with LAYER-FROZEN cross-die hash produces **deterministic cross-chip ledger outputs**. GAMMA is the physical instantiation of this theorem.
 
@@ -383,7 +542,7 @@ Glava 36 (Theorem 36.1 — TG-TRIAD-X) proves that a multi-die holographic subst
 |------|-------|----------------|----------------|
 | 🔶 [PHI](https://github.com/gHashTag/tt-trinity-phi) | 1×1 | Q8.8, GF16 | Glava 35 |
 | 👑 [EULER](https://github.com/gHashTag/tt-trinity-euler) | 8×2 | Q8.8, GF16, K3, b1.58 | Glava 35–36 |
-| 🌌 **GAMMA** (this) | 8×4 | **ALL 5: GF16, K3, Q8.8, b1.58, popcount** | Glava 36 |
+| 🌌 **GAMMA** (this) | 8×4 | **ALL 9: GF16, K3, Q8.8, b1.58, popcount, Q1.15, BPS, Z3, symbolic** | Glava 36 |
 
 ---
 
@@ -395,7 +554,7 @@ Glava 36 (Theorem 36.1 — TG-TRIAD-X) proves that a multi-die holographic subst
 | Tile size | 8×4 = 32 tiles = 1280×400 µm |
 | Clock | 50 MHz (SKY130A) · 323 MHz validated XC7A100T |
 | Cell count | ~34 100 / 48 000 (~71% util) |
-| Number formats | 5: GF(2⁴), K3, Q8.8, b1.58, popcount |
+| Number formats | 9+: GF(2⁴), K3, Q8.8, b1.58, popcount, Q1.15, BPS, Z3, symbolic |
 | Top module | `tt_um_trinity_max_true` |
 | Language | Verilog-2005, R-SI-1 (zero `*`) |
 | License | Apache-2.0 |

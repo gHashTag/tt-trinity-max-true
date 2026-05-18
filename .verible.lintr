@@ -1,0 +1,287 @@
+# Verible Linter Configuration
+
+# Trinity R-SI-1 Compliant Lint Rules
+
+[readability-identifier-length]
+strict = false
+min = 1
+max = 30
+exception-allowed-prefix = ""
+exception-allowed-suffix = ""
+package-prefix-allowed-regex = ""
+consecutive-prefix-allowed = false
+
+[readability-positional-port-prefix]
+port-prefix = ""
+port-allowed-regex = ""
+
+[readibility-repetition]
+allow = 2
+
+[readibility-braces]
+braces-inside-stmt = true
+braces-inside-else = true
+cover-function-threshold = 20
+
+[structure-module-parameter]
+style = "declaration"
+
+[structure-label-name-style]
+localparam_prefix = "L_"
+parameter_prefix = "P_"
+type_prefix = "T_"
+enum_prefix = "E_"
+
+[structure-label-name-suffix]
+enum_suffix = "_t"
+struct_suffix = "_s"
+package_suffix = "_p"
+interface_suffix = "_i"
+
+[runs-block-name-style]
+consecutive-block = "allow"
+label = "allow"
+
+[runs-macro-name-style]
+consecutive-number-prefix = "allow"
+consecutive-repetition-prefix = "allow"
+consecutive-digit-prefix = "allow"
+
+[runtime-comments]
+disallow-blockstart = false
+disallow-end-of-line-comments = false
+disallow-start-of-line-comments = false
+notice-regexp = ".*"
+
+[verilog-line-length]
+line_length = 100
+allow_region_scoping_comments = true
+allow_banner_comments = true
+
+[verilog-name-convention]
+type = "lower_snake_case"
+signal = "lower_snake_case"
+module = "lower_snake_case"
+port = "lower_snake_case"
+
+[verilog-number-literal-prefix]
+port = "k"
+parameter = "h"
+localparam = "h"
+
+[verilog-tab-params]
+alignment_style = "space"
+indent_spaces = 4
+
+[verilog-token-prefix]
+width = "w"
+
+[verilog-token-name-style]
+macro_style = "SCREAMING_SNAKE_CASE
+structure_style = "LOWER_CAMEL_CASE"
+line-style = "LOWER_CAMEL_CASE"
+imported_macro_style = "SCREAMING_SNAKE_CASE"
+
+[verilog-quotemark]
+lint_double_quoted = true
+lint_binary = false
+lint_octal = false
+lint_decimal = false
+
+[verilog-token-padding]
+port_declaration = 1
+port_reference = 0
+
+[verilog-event-trigger-type]
+bad_trigger_types = "wire"
+
+[rules-dependencies]
+context-expr-requires-completeness = false
+
+[format-indentation]
+indentation_spaces = 4
+wrap_spaces = 2
+switch_case_alignment = "align"
+case_items_alignment = "align"
+align_continuous_assignment = "true"
+align_port_declarations = "true"
+named_port_alignment = "align"
+named_port_indentation = 2
+module_net_alignment = "align"
+named_port_declaration_leading_space = 0
+module_parameter_alignment = "align"
+named_parameter_leading_space = 0
+assignment_statement_alignment = "align"
+
+[format-simplify-lexical-boolean]
+concatenation_operator = "|||"
+
+[format-suspicious]
+semicolon-after-label = true
+consecutive_blank_lines = false
+split_token_position = "comma"
+
+[format-annotation]
+string_types = false
+case_item_list_format = "align"
+
+[format-spacing]
+case_item_list_comma_newline = false
+case_item_list_comma_newline_before_first_item = false
+binary_operator = "after"
+bit_field = "after"
+unary_operator = "after"
+cast_operator = "after"
+bracket_op = "after"
+bracket_cl = "after"
+bracket = "after"
+range_operator = "after"
+between = "after"
+port_declaration = "before"
+port_reference = "after"
+
+[format-wrapping]
+function_call_spacing = "none"
+function_call_parens = "none"
+binary_operator_parens = "none"
+binary_operator_parens_same_line = "never"
+binary_operator_parens_newline = "always"
+
+[format-sort]
+module-type-name-directive = "canonical"
+port_decl_name_directive = "canonical"
+port_decl_name_width = 20
+type_name_directive = "canonical"
+type_name_width = 20
+net_decl_name_directive = "canonical"
+net_decl_name_width = 20
+parameter_decl_name_directive "canonical"
+parameter_decl_name_width = 20"
+
+[verilog-indentation-case_item]
+align_case_items = true
+indent_case_items = true
+
+[verilog-indentation-module-always]
+port_declarations = "align"
+
+[verilog-indentation-block-comment]
+default_indent = 1
+
+[verilog-indentation-modport]
+modport_indent = 4
+
+[verilog-indentation]
+collapse_parentheses = false
+character_width = 2
+assignment_wrap = 3
+max_spaces = 4
+
+[formatting]
+format_case_items = true
+format_case_labels = true
+format_port_declarations = true
+format_type_identifiers = true
+format_port_declarations_trailing_comma = false
+format_port_names_trailing_comma = false
+format_net_names_trailing_comma = false
+format_parameter_names_trailing_comma = false
+format_assignments = false
+format_formal_parameters_in_port_declarations = false
+format_local_variables = true
+format_locations = true
+format_separators = true
+format_statement_width = 0
+format_width = 100
+
+[formatting-whitespace]
+indent_statement_blocks = "indent"
+
+[formatting-casing]
+keyword_case = "lower"
+type_case = "lower"
+enum_case = "lower"
+primitive_case = "lower"
+specparam_case = "lower"
+t_param_case = "lower"
+
+[formatting-preserving]
+port_declarations = true
+
+[formatting-sorting]
+package_item_ordering = "standard"
+module_item_ordering = "standard"
+parameter_item_ordering = "standard"
+port_item_ordering = "standard"
+
+[formatting-expand]
+begin_end_keywords = false
+module_body_includes = false
+level_switch_case_keywords = false
+assignment_operators = false
+assignment_operators_port_declarations = false
+case_items = false
+
+[formatting-compact]
+import_sources = false
+
+[formatting-compact-statements]
+always_construct = false
+
+[formatting-conditional]
+indent_case_items = true
+indent_case_items = 4
+indent_case_items_relative = false
+
+[formatting-conditional-else]
+newline_before_else = true
+newline_before_assign = false
+newline_after_assign = false
+
+[formatting-conditional-generation-block]
+indent_case_items = true
+indent_case_items = 4
+
+[formatting-conditional-verification-block]
+indent_case_items = true
+indent_case_items = 4
+
+[formatting-statements]
+space_between_end_label_and_colon = true
+space_before_package_keyword = false
+space_between_keywords = true
+no_space_before_nonblocking_assignment = true
+space_between_keyword_and_parenthesis = false
+space_between_keyword_and_parenthesis_opening_parenthesis = false
+space_between_keyword_and_expression = true
+
+[formatting-statements-block-comments]
+block_comment_at_end = false
+block_comment_at_start = false
+block_comment_at_start_of_file = false
+block_comment_before_the_end_of_file = false
+
+[formatting-group-items]
+group_items = true
+
+[formatting-compatibility]
+lowercase_keywords_compatibility = "t27"
+language_targets = "verilog-2005"
+
+[formatting-technical]
+indentation_spaces = 4
+line_length = 100
+space_before_comments = true
+modify_enums = false
+
+[formatting-technical-switch-case]
+enum_assignment_statement = "assignment"
+package_case_statement = "assignment"
+generate_case_statement = "assignment"
+interface_assignment_statement = "assignment"
+constraint_assignment_statement = "assignment"
+always_comb_assignment_statement = "assignment"
+always_ff_assignment_statement = "assignment"
+
+[formatting-technical-operator]
+binary_operator_alignment = "none

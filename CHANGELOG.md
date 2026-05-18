@@ -11,8 +11,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `docs/API.md` — Complete API documentation with module interfaces
 - `docs/ARCHITECTURE.md` — ASCII architecture diagrams (system overview, cortical column, D2D mesh, power management, TOPS/W boost)
 - `docs/COMPARISON.md` — Cross-chip comparison matrix (phi/euler/gamma)
+- `docs/TEST_COVERAGE.md` — Test coverage report showing 50% coverage
+- `docs/TROUBLESHOOTING.md` — Comprehensive troubleshooting guide
+- `docs/INDEX.md` — Complete documentation index
+- `docs/GDS.md` — GDS status badges and tracking
+- `docs/HARDWARE_BRINGUP.md` — Hardware bring-up guide with cocotb examples
+- `examples/README.md` — Code examples for common usage patterns
+- `test/tb_integration_mesh.v` — GF16 mesh routing integration test
+- `test/tb_integration_cortex.v` — Neuromorphic cortex integration test
+- `test/tb_integration_d2d.v` — D2D holographic mesh integration test
+- `test/sim.sh` — Unified simulation script with colorized output
+- `.verible.lintr` — Verible linter configuration
+- `.pre-commit-config.yaml` — Pre-commit hooks for code quality, CLARA traceability, and PhD falsifiability
+- `scripts/check_clara_traceability.sh` — CLARA gap traceability checker
+- `scripts/check_falsifiability.sh` — PhD falsifiability witness checker
+- `scripts/formal_verify.sh` — Formal verification script using SBY
+- `scripts/perf_sim.sh` — Performance simulation with cycle counting and power estimation
+- `CONTRIBUTING.md` — Comprehensive contributing guidelines with neuromorphic and number format guidelines
 - Performance benchmarks section in README with throughput, latency, area, power tables
-- Additional testbenches for quantization and compute modules
 
 ### Changed
 - Updated README with unified badge order and TRI-NET cross-references section

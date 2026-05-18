@@ -1,0 +1,136 @@
+# Pre-commit hooks for TRI-NET γ-surface
+# Run: pre-commit install
+
+repos:
+  # Check for Verilog-2005 violations
+  - repo: local
+    hooks:
+      - id: verilog-systemverilog-keywords
+        name: Check for SystemVerilog keywords
+        entry: grep -n 'logic\|enum\|struct\|interface\|package\|bit\|byte\|shortint\|int\|longint\|time\|shortreal\|real\|realtime\|string'
+        language: system
+        files: \.v$
+        exclude: ^(test/sim/|docs/|witness/)
+
+  # Check for R-SI-1 violations (multiplication operators)
+  - repo: local
+    hooks:
+      - id: r-si-1-no-star
+        name: R-SI-1: Check for multiplication operators
+        entry: grep -n '^\s*\w\+\s*\*\s*\w\+\s*[;)]'
+        language: system
+        files: \.v$
+        exclude: ^(test/sim/|docs/|witness/)
+
+  # Check for indexed part-select (Verilog-2005 violation)
+  - repo: local
+    hooks:
+      - id: verilog-indexed-part-select
+        name: Check for indexed part-select
+        entry: grep -n '\[\w\+:\w\+\]\+'
+        language: system
+        files: \.v$
+        exclude: ^(test/sim/|docs/|witness/)
+
+  # Check for trailing whitespace
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: \.vcd$
+
+  # Check for mixed line endings
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: mixed-line-ending
+
+  # Check for large files
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+
+  # Check for Python syntax
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3.9
+
+  # Check Rust syntax
+  - repo: https://github.com/doublify/pre-commit-rust
+    rev: v1.0
+    hooks:
+      - id: fmt
+      - id: cargo-check
+      - id: clippy
+
+  # Check YAML syntax
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-c=.yamllint]
+
+  # Check JSON syntax
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-json
+
+  # Check for SPDX license header
+  - repo: local
+    hooks:
+      - id: spdx-header
+        name: Check for SPDX license header
+        entry: grep -q 'SPDX-License-Identifier'
+        language: system
+        files: \.(v|py|rs)$
+        exclude: ^(test/sim/|docs/|witness/)
+
+  # Check commit message format
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.27.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  # Check for TODO comments that should be issues
+  - repo: local
+    hooks:
+      - id: check-todos
+        name: Check for TODO comments
+        entry: grep -rn 'TODO\|FIXME'
+        language: system
+        files: \.v$
+        exclude: ^(test/sim/|docs/|witness/)
+
+  # Run Verible linter (if available)
+  - repo: local
+    hooks:
+      - id: verible-lint
+        name: Verible linter
+        entry: verible-verilog-lint --rules_config=.verible.lintr
+        language: system
+        files: \.v$
+        exclude: ^(test/sim/|docs/|witness/)
+
+  # Check CLARA gap modules for traceability
+  - repo: local
+    hooks:
+      - id: clara-traceability
+        name: Check CLARA gap traceability
+        entry: scripts/check_clara_traceability.sh
+        language: script
+        files: (redteam_filter|k3_alu|datalog_engine|constraint_ctrl|explainability|asp_solver|composition|proof_trace|sat_solver|audit_log)\.v$
+
+  # Check PhD falsifiability witnesses
+  - repo: local
+    hooks:
+      - id: phd-falsifiability
+        name: Check PhD falsifiability witnesses
+        entry: scripts/check_falsifiability.sh
+        language: script
+        files: \.v$

@@ -169,14 +169,16 @@ project:
     - "gf16_to_fp16.v"
     - "gf16_to_posit16.v"
     - "gf32_to_fp32.v"
+    # $TRI token accumulator (DePIN proof-of-compute)
+    - "tri_token_accumulator.v"
 
 pinout:
   ui[0]: "load_mode (0=canonical 0x47C0 default, 1=packet path + status_byte)"
   ui[1]: "lucas_idx[0]"
   ui[2]: "lucas_idx[1]"
   ui[3]: "lucas_idx[2]"
-  ui[4]: "unused"
-  ui[5]: "unused"
+  ui[4]: "tri_status_msb (ui[4:2]=3b111 → token balance on uo/uio_out)"
+  ui[5]: "unused (ui[4:2] tri_status decoded, ui[7:5] unused)"
   ui[6]: "crown_addr[6:0] MSB (with ui[5:0])"
   ui[7]: "unused"
   uo[0]: "result[0] (canonical 0x47C0 default; mesh result_lo[0] after FSM)"

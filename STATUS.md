@@ -118,4 +118,5 @@ flagged them; that follow-up is now closed.
 - [`D2D_PROTOCOL.md`](D2D_PROTOCOL.md) — chip-to-chip / D2D protocol index for TRI-NET
 - [`GF16_BFLOAT16_NMSE.md`](GF16_BFLOAT16_NMSE.md) — GF16 vs bfloat16 NMSE comparison protocol
 - [`TRIPLE_DECK_STATUS.md`](TRIPLE_DECK_STATUS.md) — RBB → FBB → CAP_BOOST status (mostly plan-only on γ)
+- [`SCIENTIFIC_IMPROVEMENT_PLAN.md`](SCIENTIFIC_IMPROVEMENT_PLAN.md) — TRI-NET 2026 plan (γ-side view)
 - [`CHANGELOG.md`](CHANGELOG.md) — wave / submission history

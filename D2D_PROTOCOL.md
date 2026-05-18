@@ -125,3 +125,4 @@ the summary that matters for γ-side integration:
 - [`docs/PINOUT.md`](docs/PINOUT.md), [`docs/API.md`](docs/API.md) — γ pin / register map
 - [`BENCHMARKS.md`](BENCHMARKS.md) — Demo 3: receipt + mesh route
 - [`STATUS.md`](STATUS.md) — readiness gates
+- [`SCIENTIFIC_IMPROVEMENT_PLAN.md`](SCIENTIFIC_IMPROVEMENT_PLAN.md) — TRI-NET 2026 plan (CL-03 / PUB-01)

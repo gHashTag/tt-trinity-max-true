@@ -164,3 +164,4 @@ To close this out and publish a real `Δ_dB`:
 - [`specs/numeric/gf16.t27`](specs/numeric/gf16.t27) — GF16 format
 - [`specs/numeric/formats.t27`](specs/numeric/formats.t27) — full registry
 - [`t27`](https://github.com/gHashTag/t27) — spec-to-RTL toolchain
+- [`SCIENTIFIC_IMPROVEMENT_PLAN.md`](SCIENTIFIC_IMPROVEMENT_PLAN.md) — TRI-NET 2026 plan (item SN-03 owns this harness)

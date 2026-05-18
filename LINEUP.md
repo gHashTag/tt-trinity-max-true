@@ -143,5 +143,6 @@ SKY130A.
 - [`D2D_PROTOCOL.md`](D2D_PROTOCOL.md) — chip-to-chip / D2D protocol index
 - [`GF16_BFLOAT16_NMSE.md`](GF16_BFLOAT16_NMSE.md) — GF16 vs bfloat16 NMSE protocol
 - [`TRIPLE_DECK_STATUS.md`](TRIPLE_DECK_STATUS.md) — RBB → FBB → CAP_BOOST status
+- [`SCIENTIFIC_IMPROVEMENT_PLAN.md`](SCIENTIFIC_IMPROVEMENT_PLAN.md) — TRI-NET 2026 plan (γ-side view)
 - [Tiny Tapeout chips](https://tinytapeout.com/chips/) — shuttle catalogue (TTSKY26b)
 - [DARPA CLARA](https://www.darpa.mil/research/programs/clara)

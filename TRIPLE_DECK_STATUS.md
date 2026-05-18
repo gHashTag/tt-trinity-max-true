@@ -170,3 +170,4 @@ even where the RTL is still planned.
 - [`CLARA_TRACEABILITY.md`](CLARA_TRACEABILITY.md) — CLARA gap RTL mapping (distinct from triple-deck)
 - `crates/rbb-witness/`, `crates/fbb-active-witness/`, `crates/cap-boost-witness/` — sacred-opcode witnesses
 - `src/fbb_active_path.v` — the one triple-decker module with γ-side RTL today
+- [`SCIENTIFIC_IMPROVEMENT_PLAN.md`](SCIENTIFIC_IMPROVEMENT_PLAN.md) — TRI-NET 2026 plan (items EN-01 / EN-02 / EN-03 own these levers)

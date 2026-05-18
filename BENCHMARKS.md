@@ -220,3 +220,4 @@ estimate in the tables above. Do **not** pre-fill it.
 - [`D2D_PROTOCOL.md`](D2D_PROTOCOL.md) — D2D / chip-to-chip protocol index (Demo 3)
 - [`GF16_BFLOAT16_NMSE.md`](GF16_BFLOAT16_NMSE.md) — Numeric-format comparison harness for Demo 1
 - [`TRIPLE_DECK_STATUS.md`](TRIPLE_DECK_STATUS.md) — Dynamic-power envelope status (RBB → FBB → CAP_BOOST)
+- [`SCIENTIFIC_IMPROVEMENT_PLAN.md`](SCIENTIFIC_IMPROVEMENT_PLAN.md) — TRI-NET 2026 plan (γ-side view; SN-03 binds Demo 1 NMSE)

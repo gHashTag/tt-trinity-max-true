@@ -1,0 +1,11 @@
+{
+  "gen_hash_c": "sha256:51061e38f6dab89c7f573fcf2623e86b03219f7cf8ae48d20aac482e977e2b66",
+  "gen_hash_rust": "sha256:2c6e6c41a327cac5a489710d201549b0de4feff4c6a10ee4f1f2050285e7467c",
+  "gen_hash_verilog": "sha256:a2fc80059c42cb951bb5eba4813280cda5140f2b553f999056d9af4e77879798",
+  "gen_hash_zig": "sha256:0600cb57f6e3b27585f2462112c49351840aaaab224c97ad6268fb4c1bd5a214",
+  "module": "avs-reconf",
+  "ring": 12,
+  "sealed_at": "2026-05-18T04:13:11Z",
+  "spec_hash": "sha256:3f327ef3f375cf0914564095f3632fadf25550c619fe0244c6432b5fcd51eefc",
+  "spec_path": "specs/fpga/avs_reconf.t27"
+}

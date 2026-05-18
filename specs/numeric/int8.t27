@@ -1,493 +1,1151 @@
 // SPDX-License-Identifier: Apache-2.0
-// t27/specs/numeric/int8.t27
-// Int8 - 8-bit signed integer
-// NUMERIC-STANDARD-001 Agent 10 (P1)
+; int8.t27 — Int8 Signed 8-bit Integer Quantization
+; Range: -128 to 127
+; Standard 8-bit signed integer, widely used in quantization
+; φ² + 1/φ² = 3 | TRINITY
 
-module Int8 {
-    // Import test/invariant/bench framework
-    use base::testing;
-    use base::benchmarking;
+module triformat-int8;
 
-    // 1. Format Definition
-    // Int8 bit layout: S(7) - 8-bit two's complement
-    //   S: 8 bits (signed 8-bit integer)
-    //
-    // Range: -128 to 127
-    // 256 possible values
+// ============================================================================
+// Constants
+// ============================================================================
 
-    const BITS : u8 = 8;
+pub const BITS : u8 = 8;
+pub const MIN : i8 = -128;
+pub const MAX : i8 = 127;
+pub const RANGE : u16 = 256;  // 2^8
 
-    // 2. Int8 Type
+pub const MASK : u8 = 0xFF;  // All 8 bits mask
 
-    struct Int8 {
-        raw : u8,  // 8-bit raw value (two's complement)
-    }
+// ============================================================================
+// Types
+// ============================================================================
 
-    // 3. Encoding/Decoding
+pub const Int8 = i8;  // Native i8 type
 
-    // Encode i32 to Int8 (clamp to range)
-    fn encode(value: i32) -> Int8 {
-        const clamped = if (value > 127) { 127 } else if (value < -128) { -128 } else { value };
-        // Two's complement: negative values are stored as 2^8 + value
-        let raw = clamped as u8;
-        if (clamped < 0) {
-            raw = (256 + clamped) as u8;
-        }
-        return Int8{ raw = raw };
-    }
+// ============================================================================
+// Conversion Functions
+// ============================================================================
 
-    // Decode Int8 to i32
-    fn decode(i: Int8) -> i32 {
-        const raw = i.raw as i32;
-        // Two's complement: if sign bit set, negative
-        if (raw >= 128) {
-            return raw - 256;
-        }
-        return raw;
-    }
-
-    // 4. Format Properties
-
-    fn min_value() -> i32 {
-        return -128;
-    }
-
-    fn max_value() -> i32 {
-        return 127;
-    }
-
-    fn range() -> i32 {
-        return max_value() - min_value();
-    }
-
-    fn num_values() -> i32 {
-        return 256;
-    }
-
-    // 5. Validation
-
-    fn validate_format() -> bool {
-        return BITS == 8;
-    }
-
-    // 6. Use Cases
-
-    // Int8 is optimal for:
-    // - Standard integer quantization (75% smaller than INT32)
-    // - Neural network weight quantization
-    // - Activation caching
-    // - General-purpose integer arithmetic
-    // - Control and status registers
-
-    // Memory: 8 bits = 1 byte (4x INT32 in same space)
-    const MEMORY_RATIO_VS_FP32 : f32 = 8.0 / 32.0;  // 0.25
-
-    // 7. Arithmetic Operations
-
-    fn add(a: Int8, b: Int8) -> Int8 {
-        const val_a = decode(a);
-        const val_b = decode(b);
-        const result = val_a + val_b;
-        return encode(result);
-    }
-
-    fn sub(a: Int8, b: Int8) -> Int8 {
-        const val_a = decode(a);
-        const val_b = decode(b);
-        const result = val_a - val_b;
-        return encode(result);
-    }
-
-    fn mul(a: Int8, b: Int8) -> Int8 {
-        const val_a = decode(a);
-        const val_b = decode(b);
-        const result = val_a * val_b;
-        return encode(result);
-    }
-
-    fn div(a: Int8, b: Int8) -> Int8 {
-        const val_a = decode(a);
-        const val_b = decode(b);
-        const result = if (val_b != 0) { val_a / val_b } else { 0 };
-        return encode(result);
-    }
-
-    fn mod(a: Int8, b: Int8) -> Int8 {
-        const val_a = decode(a);
-        const val_b = decode(b);
-        const result = if (val_b != 0) { val_a % val_b } else { 0 };
-        return encode(result);
-    }
-
-    fn neg(i: Int8) -> Int8 {
-        return encode(-decode(i));
-    }
-
-    fn abs(i: Int8) -> Int8 {
-        const val = decode(i);
-        return encode(if (val < 0) { -val } else { val });
-    }
-
-    // 8. Comparison Operations
-
-    fn eq(a: Int8, b: Int8) -> bool {
-        return decode(a) == decode(b);
-    }
-
-    fn ne(a: Int8, b: Int8) -> bool {
-        return decode(a) != decode(b);
-    }
-
-    fn lt(a: Int8, b: Int8) -> bool {
-        return decode(a) < decode(b);
-    }
-
-    fn le(a: Int8, b: Int8) -> bool {
-        return decode(a) <= decode(b);
-    }
-
-    fn gt(a: Int8, b: Int8) -> bool {
-        return decode(a) > decode(b);
-    }
-
-    fn ge(a: Int8, b: Int8) -> bool {
-        return decode(a) >= decode(b);
-    }
-
-    // 9. Bitwise Operations
-
-    fn and(a: Int8, b: Int8) -> Int8 {
-        return Int8{ raw = a.raw & b.raw };
-    }
-
-    fn or(a: Int8, b: Int8) -> Int8 {
-        return Int8{ raw = a.raw | b.raw };
-    }
-
-    fn xor(a: Int8, b: Int8) -> Int8 {
-        return Int8{ raw = a.raw ^ b.raw };
-    }
-
-    fn not(i: Int8) -> Int8 {
-        return Int8{ raw = i.raw ^ 0xFF };
-    }
-
-    fn shl(a: Int8, shift: u8) -> Int8 {
-        const clamped_shift = if (shift > 7) { 7 } else { shift };
-        return Int8{ raw = (a.raw << clamped_shift) & 0xFF };
-    }
-
-    fn shr(a: Int8, shift: u8) -> Int8 {
-        const clamped_shift = if (shift > 7) { 7 } else { shift };
-        // Arithmetic shift for negative numbers
-        const val = decode(a);
-        const result = val >> (clamped_shift as i32);
-        return encode(result);
-    }
-
-    // TDD-Inside-Spec: Tests and Invariants for Int8
-
-    test int8_decode_zero
-        given i = Int8{ raw = 0 }
-        when value = decode(i)
-        then value == 0
-
-    test int8_encode_zero_roundtrip
-        given original = 0
-        and   encoded = encode(original)
-        and   decoded = decode(encoded)
-        then decoded == original
-
-    test int8_encode_positive_values
-        for (vals) |vals|
-        then encode(vals[i]).raw == vals[i] for vals[i] in {0, 1, 2, 50, 100, 127}
-
-    test int8_decode_positive_values
-        for (vals) |vals|
-        then decode(Int8{ raw = vals[i] }) == vals[i] for vals[i] in {0, 1, 2, 50, 100, 127}
-
-    test int8_encode_negative_values
-        given vals = [-1, -2, -50, -100, -127, -128]
-        then encode(vals[i]).raw == (256 + vals[i]) for vals[i] in vals
-
-    test int8_decode_negative_values
-        given enc = [255, 254, 206, 156, 129, 128]
-        then decode(Int8{ raw = enc[i] }) == enc[i] - 256 for enc[i] in enc
-
-    test int8_bits_constant
-        then BITS == 8
-
-    test int8_max_value
-        given max_val = max_value()
-        then max_val == 127
-
-    test int8_min_value
-        given min_val = min_value()
-        then min_val == -128
-
-    test int8_range
-        given range_val = range()
-        then range_val == 255
-
-    test int8_num_values
-        given num = num_values()
-        then num == 256
-
-    test int8_memory_ratio_vs_fp32
-        given ratio = MEMORY_RATIO_VS_FP32
-        then abs(ratio - 0.25) < 0.01
-
-    test int8_validate_format_success
-        given valid = validate_format()
-        then valid == true
-
-    test int8_add_positive
-        given a = Int8{ raw = 50 }
-        and   b = Int8{ raw = 60 }
-        and   result = add(a, b)
-        then decode(result) == 110
-
-    test int8_add_overflow
-        given a = Int8{ raw = 100 }
-        and   b = Int8{ raw = 50 }
-        and   result = add(a, b)
-        then decode(result) == 127
-
-    test int8_sub_positive
-        given a = Int8{ raw = 100 }
-        and   b = Int8{ raw = 30 }
-        and   result = sub(a, b)
-        then decode(result) == 70
-
-    test int8_sub_underflow
-        given a = Int8{ raw = 50 }
-        and   b = encode(100)
-        and   result = sub(a, b)
-        then decode(result) == -50
-
-    test int8_mul_positive
-        given a = Int8{ raw = 10 }
-        and   b = Int8{ raw = 12 }
-        and   result = mul(a, b)
-        then decode(result) == 120
-
-    test int8_mul_overflow
-        given a = Int8{ raw = 20 }
-        and   b = Int8{ raw = 20 }
-        and   result = mul(a, b)
-        then decode(result) == 127
-
-    test int8_div_positive
-        given a = Int8{ raw = 100 }
-        and   b = Int8{ raw = 25 }
-        and   result = div(a, b)
-        then decode(result) == 4
-
-    test int8_div_by_zero
-        given a = Int8{ raw = 100 }
-        and   b = Int8{ raw = 0 }
-        and   result = div(a, b)
-        then decode(result) == 0
-
-    test int8_mod_positive
-        given a = Int8{ raw = 13 }
-        and   b = Int8{ raw = 5 }
-        and   result = mod(a, b)
-        then decode(result) == 3
-
-    test int8_mod_by_zero
-        given a = Int8{ raw = 13 }
-        and   b = Int8{ raw = 0 }
-        and   result = mod(a, b)
-        then decode(result) == 0
-
-    test int8_neg_positive
-        given i = Int8{ raw = 50 }
-        and   result = neg(i)
-        then decode(result) == -50
-
-    test int8_neg_negative
-        given i = encode(-50)
-        and   result = neg(i)
-        then decode(result) == 50
-
-    test int8_neg_zero
-        given i = Int8{ raw = 0 }
-        and   result = neg(i)
-        then decode(result) == 0
-
-    test int8_abs_positive
-        given i = Int8{ raw = 50 }
-        and   result = abs(i)
-        then decode(result) == 50
-
-    test int8_abs_negative
-        given i = encode(-50)
-        and   result = abs(i)
-        then decode(result) == 50
-
-    test int8_abs_zero
-        given i = Int8{ raw = 0 }
-        and   result = abs(i)
-        then decode(result) == 0
-
-    test int8_eq_true
-        given a = Int8{ raw = 50 }
-        and   b = Int8{ raw = 50 }
-        then eq(a, b) == true
-
-    test int8_eq_false
-        given a = Int8{ raw = 50 }
-        and   b = Int8{ raw = 51 }
-        then eq(a, b) == false
-
-    test int8_lt_true
-        given a = Int8{ raw = 20 }
-        and   b = Int8{ raw = 50 }
-        then lt(a, b) == true
-
-    test int8_lt_false
-        given a = Int8{ raw = 50 }
-        and   b = Int8{ raw = 20 }
-        then lt(a, b) == false
-
-    test int8_and_operation
-        given a = Int8{ raw = 0x55 }
-        and   b = Int8{ raw = 0xAA }
-        and   result = and(a, b)
-        then result.raw == 0x00
-
-    test int8_or_operation
-        given a = Int8{ raw = 0x55 }
-        and   b = Int8{ raw = 0xAA }
-        and   result = or(a, b)
-        then result.raw == 0xFF
-
-    test int8_xor_operation
-        given a = Int8{ raw = 0x55 }
-        and   b = Int8{ raw = 0xAA }
-        and   result = xor(a, b)
-        then result.raw == 0xFF
-
-    test int8_not_operation
-        given i = Int8{ raw = 0x55 }
-        and   result = not(i)
-        then result.raw == 0xAA
-
-    test int8_shl_left
-        given a = Int8{ raw = 0x01 }
-        and   result = shl(a, 3)
-        then result.raw == 0x08
-
-    test int8_shl_clamp
-        given a = Int8{ raw = 0x01 }
-        and   result = shl(a, 10)
-        then result.raw == 0x80
-
-    test int8_shr_right
-        given a = Int8{ raw = 0x80 }
-        and   result = shr(a, 2)
-        then decode(result) == -32
-
-    test int8_encode_clamps_above_max
-        given original = 200
-        and   encoded = encode(original)
-        then decode(encoded) == 127
-
-    test int8_encode_clamps_below_min
-        given original = -200
-        and   encoded = encode(original)
-        then decode(encoded) == -128
-
-    test int8_all_values_encode_decode
-        for (i in 0..255)
-        then decode(encode(i - 128)) == (i - 128)
-
-    invariant int8_bits_constant
-        assert BITS == 8
-
-    invariant int8_max_value_is_127
-        assert max_value() == 127
-
-    invariant int8_min_value_is_neg_128
-        assert min_value() == -128
-
-    invariant int8_range_is_255
-        assert range() == 255
-
-    invariant int8_num_values_is_256
-        assert num_values() == 256
-
-    invariant int8_encode_preserves_zero
-        assert encode(0).raw == 0
-
-    invariant int8_decode_preserves_zero
-        assert decode(Int8{raw = 0}) == 0
-
-    invariant int8_add_is_commutative
-        given a = 50 and b = 30
-        then decode(add(encode(a), encode(b))) == decode(add(encode(b), encode(a)))
-
-    invariant int8_zero_add_identity
-        for (x in {0, 50, 100, 127})
-        then decode(add(encode(x), encode(0))) == x
-
-    invariant int8_sub_self_is_zero
-        for (x in {0, 50, 100, 127})
-        then decode(sub(encode(x), encode(x))) == 0
-
-    invariant int8_mul_by_neg_one_is_neg
-        for (x in {0, 50, 100, 127})
-        then decode(mul(encode(x), encode(-1))) == -x
-
-    invariant int8_mul_by_zero_is_zero
-        for (x in {0, 50, 100, 127})
-        then decode(mul(encode(x), encode(0))) == 0
-
-    invariant int8_mul_by_one_is_identity
-        for (x in {0, 50, 100, 127})
-        then decode(mul(encode(x), encode(1))) == x
-
-    invariant int8_neg_neg_is_identity
-        for (x in {0, 50, 100, 127})
-        then decode(neg(neg(encode(x)))) == x
-
-    invariant int8_abs_is_non_negative
-        for (x in {-128..127})
-        then decode(abs(encode(x))) >= 0
-
-    invariant int8_abs_preserves_zero
-        assert decode(abs(Int8{raw = 0})) == 0
-
-    invariant int8_shl_zero_is_zero
-        for (shift in {0, 1, 7})
-        then shl(Int8{raw = 1}, shift).raw == 1 << shift
-
-    invariant int8_shr_by_max_is_zero_or_neg_one
-        given i = Int8{ raw = 1 }
-        then shr(i, 7).raw == 0
-
-    bench int8_encode_latency
-        measure: nanoseconds to encode(50)
-        target: < 20ns
-
-    bench int8_decode_latency
-        measure: nanoseconds to decode(Int8{ raw = 50 })
-        target: < 10ns
-
-    bench int8_encode_decode_roundtrip
-        measure: nanoseconds to encode(50) and decode(encode(50))
-        target: < 30ns
-
-    bench int8_add_latency
-        measure: nanoseconds to add(Int8{ raw = 30 }, Int8{ raw = 40 })
-        target: < 30ns
-
-    bench int8_mul_latency
-        measure: nanoseconds to mul(Int8{ raw = 10 }, Int8{ raw = 10 })
-        target: < 30ns
-
-    bench int8_div_latency
-        measure: nanoseconds to div(Int8{ raw = 100 }, Int8{ raw = 10 })
-        target: < 30ns
+// int8_from_i8(value: i8) -> Int8
+// Convert i8 to Int8 (identity function, no-op)
+pub fn int8_from_i8(value: i8) Int8 {
+    return value;
 }
+
+// int8_from_i16(value: i16) -> Int8
+// Convert i16 to Int8 with saturation
+pub fn int8_from_i16(value: i16) Int8 {
+    if (value < @as(i16, MIN)) {
+        return MIN;
+    } else if (value > @as(i16, MAX)) {
+        return MAX;
+    }
+    return @as(i8, @intCast(value));
+}
+
+// int8_from_i32(value: i32) -> Int8
+// Convert i32 to Int8 with saturation
+pub fn int8_from_i32(value: i32) Int8 {
+    if (value < @as(i32, MIN)) {
+        return MIN;
+    } else if (value > @as(i32, MAX)) {
+        return MAX;
+    }
+    return @as(i8, @intCast(value));
+}
+
+// int8_from_u8(value: u8) -> Int8
+// Convert u8 to Int8 with saturation
+// Values > 127 clamp to 127
+pub fn int8_from_u8(value: u8) Int8 {
+    if (value > 127) {
+        return MAX;
+    }
+    return @as(i8, @bitCast(value));
+}
+
+// int8_from_f32(value: f32) -> Int8
+// Convert f32 to Int8 with rounding and saturation
+// Round to nearest, ties to even
+pub fn int8_from_f32(value: f32) Int8 {
+    if (std.math.isNan(value)) {
+        return 0;
+    }
+    if (value > @as(f32, @floatFromInt(MAX)) + 0.5) {
+        return MAX;
+    }
+    if (value < @as(f32, @floatFromInt(MIN)) - 0.5) {
+        return MIN;
+    }
+    const rounded = @as(i32, @intFromFloat(@round(value)));
+    return int8_from_i32(rounded);
+}
+
+// int8_from_f64(value: f64) -> Int8
+// Convert f64 to Int8 with rounding and saturation
+pub fn int8_from_f64(value: f64) Int8 {
+    if (std.math.isNan(value)) {
+        return 0;
+    }
+    if (value > @as(f64, @floatFromInt(MAX)) + 0.5) {
+        return MAX;
+    }
+    if (value < @as(f64, @floatFromInt(MIN)) - 0.5) {
+        return MIN;
+    }
+    const rounded = @as(i32, @intFromFloat(@round(value)));
+    return int8_from_i32(rounded);
+}
+
+// int8_to_i8(value: Int8) -> i8
+// Convert Int8 to i8 (identity function)
+pub fn int8_to_i8(value: Int8) i8 {
+    return value;
+}
+
+// int8_to_i16(value: Int8) -> i16
+// Convert Int8 to i16 (sign extension)
+pub fn int8_to_i16(value: Int8) i16 {
+    return @as(i16, value);
+}
+
+// int8_to_i32(value: Int8) -> i32
+// Convert Int8 to i32 (sign extension)
+pub fn int8_to_i32(value: Int8) i32 {
+    return @as(i32, value);
+}
+
+// int8_to_u8(value: Int8) -> ?u8
+// Convert Int8 to u8 (returns null for negative values)
+pub fn int8_to_u8(value: Int8) ?u8 {
+    if (value < 0) {
+        return null;
+    }
+    return @as(u8, @intCast(value));
+}
+
+// int8_to_f32(value: Int8) -> f32
+// Convert Int8 to f32
+pub fn int8_to_f32(value: Int8) f32 {
+    return @as(f32, @floatFromInt(value));
+}
+
+// int8_to_f64(value: Int8) -> f64
+// Convert Int8 to f64
+pub fn int8_to_f64(value: Int8) f64 {
+    return @as(f64, @floatFromInt(value));
+}
+
+// ============================================================================
+// Arithmetic Operations
+// ============================================================================
+
+// int8_add(a: Int8, b: Int8) -> Int8
+// Add two Int8 values with saturation
+pub fn int8_add(a: Int8, b: Int8) Int8 {
+    const result = @as(i16, a) + @as(i16, b);
+    return int8_from_i16(result);
+}
+
+// int8_sub(a: Int8, b: Int8) -> Int8
+// Subtract two Int8 values with saturation
+pub fn int8_sub(a: Int8, b: Int8) Int8 {
+    const result = @as(i16, a) - @as(i16, b);
+    return int8_from_i16(result);
+}
+
+// int8_mul(a: Int8, b: Int8) -> Int8
+// Multiply two Int8 values with saturation
+pub fn int8_mul(a: Int8, b: Int8) Int8 {
+    const result = @as(i16, a) * @as(i16, b);
+    return int8_from_i16(result);
+}
+
+// int8_div(a: Int8, b: Int8) -> Int8
+// Divide two Int8 values with saturation
+// Division by zero returns MAX or MIN based on sign of numerator
+pub fn int8_div(a: Int8, b: Int8) Int8 {
+    if (b == 0) {
+        return if (a >= 0) MAX else MIN;
+    }
+    return a / b;  // i8 division saturates automatically on overflow
+}
+
+// int8_mod(a: Int8, b: Int8) -> Int8
+// Modulo operation (returns 0 on division by zero)
+pub fn int8_mod(a: Int8, b: Int8) Int8 {
+    if (b == 0) {
+        return 0;
+    }
+    const result = @rem(a, b);
+    // Handle negative remainder to make it always positive
+    return if (result < 0) result + b else result;
+}
+
+// int8_pow(base: Int8, exp: u8) -> Int8
+// Power function with saturation
+pub fn int8_pow(base: Int8, exp: u8) Int8 {
+    if (exp == 0) {
+        return 1;
+    }
+    if (base == 0) {
+        return 0;
+    }
+    if (base == 1) {
+        return 1;
+    }
+    if (base == -1) {
+        return if (exp % 2 == 0) 1 else -1;
+    }
+
+    var result: i16 = 1;
+    var current: i16 = @as(i16, base);
+    var remaining = exp;
+
+    while (remaining > 0) {
+        if (remaining % 2 == 1) {
+            result = result * current;
+            if (result > MAX) {
+                return MAX;
+            }
+            if (result < MIN) {
+                return MIN;
+            }
+        }
+        current = current * current;
+        if (current > MAX) {
+            return MAX;
+        }
+        if (current < MIN) {
+            return MIN;
+        }
+        remaining = remaining / 2;
+    }
+
+    return int8_from_i16(result);
+}
+
+// ============================================================================
+// Bitwise Operations
+// ============================================================================
+
+// int8_and(a: Int8, b: Int8) -> Int8
+// Bitwise AND
+pub fn int8_and(a: Int8, b: Int8) Int8 {
+    return a & b;
+}
+
+// int8_or(a: Int8, b: Int8) -> Int8
+// Bitwise OR
+pub fn int8_or(a: Int8, b: Int8) Int8 {
+    return a | b;
+}
+
+// int8_xor(a: Int8, b: Int8) -> Int8
+// Bitwise XOR
+pub fn int8_xor(a: Int8, b: Int8) Int8 {
+    return a ^ b;
+}
+
+// int8_not(value: Int8) -> Int8
+// Bitwise NOT
+pub fn int8_not(value: Int8) Int8 {
+    return ~value;
+}
+
+// int8_shl(value: Int8, amount: u8) -> Int8
+// Left shift (saturated)
+pub fn int8_shl(value: Int8, amount: u8) Int8 {
+    const clamped = @min(amount, 7);
+    const result = @as(i16, value) << clamped;
+    return int8_from_i16(result);
+}
+
+// int8_shr(value: Int8, amount: u8) -> Int8
+// Right shift (arithmetic, sign-preserving)
+pub fn int8_shr(value: Int8, amount: u8) Int8 {
+    const clamped = @min(amount, 7);
+    return @shrExact(value, clamped);
+}
+
+// int8_rol(value: Int8, amount: u8) -> Int8
+// Rotate left
+pub fn int8_rol(value: Int8, amount: u8) Int8 {
+    const clamped = amount % 8;
+    const uval = @as(u8, @bitCast(value));
+    const result = (uval << clamped) | (uval >> (8 - clamped));
+    return @as(i8, @bitCast(result));
+}
+
+// int8_ror(value: Int8, amount: u8) -> Int8
+// Rotate right
+pub fn int8_ror(value: Int8, amount: u8) Int8 {
+    const clamped = amount % 8;
+    const uval = @as(u8, @bitCast(value));
+    const result = (uval >> clamped) | (uval << (8 - clamped));
+    return @as(i8, @bitCast(result));
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+// int8_abs(value: Int8) -> Int8
+// Absolute value of Int8 with saturation
+pub fn int8_abs(value: Int8) Int8 {
+    if (value == MIN) {
+        return MAX;  // |-128| = 127 (saturated)
+    }
+    return if (value < 0) -value else value;
+}
+
+// int8_neg(value: Int8) -> Int8
+// Negate Int8 (with saturation for -MIN)
+pub fn int8_neg(value: Int8) Int8 {
+    if (value == MIN) {
+        return MAX;  // -(-128) = 127 (saturated)
+    }
+    return -value;
+}
+
+// int8_sign(value: Int8) -> Int8
+// Sign of value: -1, 0, or 1
+pub fn int8_sign(value: Int8) Int8 {
+    if (value < 0) {
+        return -1;
+    } else if (value > 0) {
+        return 1;
+    }
+    return 0;
+}
+
+// int8_is_equal(a: Int8, b: Int8) -> bool
+pub fn int8_is_equal(a: Int8, b: Int8) bool {
+    return a == b;
+}
+
+// int8_is_greater(a: Int8, b: Int8) -> bool
+pub fn int8_is_greater(a: Int8, b: Int8) bool {
+    return a > b;
+}
+
+// int8_is_less(a: Int8, b: Int8) -> bool
+pub fn int8_is_less(a: Int8, b: Int8) bool {
+    return a < b;
+}
+
+// int8_min(a: Int8, b: Int8) -> Int8
+pub fn int8_min(a: Int8, b: Int8) Int8 {
+    return if (a < b) a else b;
+}
+
+// int8_max(a: Int8, b: Int8) -> Int8
+pub fn int8_max(a: Int8, b: Int8) Int8 {
+    return if (a > b) a else b;
+}
+
+// int8_clamp(value: Int8, min: Int8, max: Int8) -> Int8
+pub fn int8_clamp(value: Int8, min: Int8, max: Int8) Int8 {
+    if (value < min) {
+        return min;
+    } else if (value > max) {
+        return max;
+    }
+    return value;
+}
+
+// int8_lerp(a: Int8, b: Int8, t: f32) -> Int8
+// Linear interpolation between a and b
+pub fn int8_lerp(a: Int8, b: Int8, t: f32) Int8 {
+    const fa = @as(f32, @floatFromInt(a));
+    const fb = @as(f32, @floatFromInt(b));
+    const result = fa + (fb - fa) * t;
+    return int8_from_f32(result);
+}
+
+// int8_sq(value: Int8) -> Int8
+// Square value with saturation
+pub fn int8_sq(value: Int8) Int8 {
+    return int8_mul(value, value);
+}
+
+// int8_abs_diff(a: Int8, b: Int8) -> Int8
+// Absolute difference between two Int8 values
+pub fn int8_abs_diff(a: Int8, b: Int8) Int8 {
+    const diff = int8_sub(a, b);
+    return int8_abs(diff);
+}
+
+// int8_sqrt(value: Int8) -> Int8
+// Integer square root (rounded down)
+// Returns 0 for negative inputs
+pub fn int8_sqrt(value: Int8) Int8 {
+    if (value < 0) {
+        return 0;
+    }
+    if (value == 0) {
+        return 0;
+    }
+
+    var result: i8 = 0;
+    var bit: i8 = 1;
+
+    // Find the highest power of 4 <= value
+    while (bit <= value and bit > 0) {
+        bit = bit * 4;
+    }
+    bit = bit / 4;
+
+    while (bit != 0) {
+        if (value >= result + bit) {
+            value = value - (result + bit);
+            result = result / 2 + bit;
+        } else {
+            result = result / 2;
+        }
+        bit = bit / 4;
+    }
+
+    return result;
+}
+
+// int8_is_power_of_two(value: Int8) -> bool
+// Check if value is a power of two (for positive values only)
+pub fn int8_is_power_of_two(value: Int8) bool {
+    if (value <= 0) {
+        return false;
+    }
+    const uval = @as(u8, @bitCast(value));
+    return (uval & (uval - 1)) == 0;
+}
+
+// int8_count_ones(value: Int8) -> u8
+// Count the number of set bits
+pub fn int8_count_ones(value: Int8) u8 {
+    const uval = @as(u8, @bitCast(value));
+    return @popCount(uval);
+}
+
+// int8_count_zeros(value: Int8) -> u8
+// Count the number of zero bits
+pub fn int8_count_zeros(value: Int8) u8 {
+    return 8 - int8_count_ones(value);
+}
+
+// int8_reverse_bits(value: Int8) -> Int8
+// Reverse the bits in an Int8
+pub fn int8_reverse_bits(value: Int8) Int8 {
+    const uval = @as(u8, @bitCast(value));
+    var result: u8 = 0;
+    var i: u8 = 0;
+    while (i < 8) {
+        result = (result << 1) | (uval & 1);
+        uval = uval >> 1;
+        i = i + 1;
+    }
+    return @as(i8, @bitCast(result));
+}
+
+// ============================================================================
+// TDD Tests
+// ============================================================================
+
+test "int8_from_i8_identity" {
+    given value = 42
+    try std.testing.expect(result = int8_from_i8(value));
+    try std.testing.expect(result == 42);
+}
+
+test "int8_from_i16_positive" {
+    given value = 100
+    try std.testing.expect(result = int8_from_i16(value));
+    try std.testing.expect(result == 100);
+}
+
+test "int8_from_i16_overflow" {
+    given value = 200
+    try std.testing.expect(result = int8_from_i16(value));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_from_i16_negative" {
+    given value = -50
+    try std.testing.expect(result = int8_from_i16(value));
+    try std.testing.expect(result == -50);
+}
+
+test "int8_from_i16_underflow" {
+    given value = -200
+    try std.testing.expect(result = int8_from_i16(value));
+    try std.testing.expect(result == MIN);
+}
+
+test "int8_from_i32_in_range" {
+    given value = 42
+    try std.testing.expect(result = int8_from_i32(value));
+    try std.testing.expect(result == 42);
+}
+
+test "int8_from_i32_overflow" {
+    given value = 1000
+    try std.testing.expect(result = int8_from_i32(value));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_from_u8_in_range" {
+    given value = 100
+    try std.testing.expect(result = int8_from_u8(value));
+    try std.testing.expect(result == 100);
+}
+
+test "int8_from_u8_overflow" {
+    given value = 200
+    try std.testing.expect(result = int8_from_u8(value));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_from_f32_zero" {
+    given value = 0.0
+    try std.testing.expect(result = int8_from_f32(value));
+    try std.testing.expect(result == 0);
+}
+
+test "int8_from_f32_one" {
+    given value = 1.0
+    try std.testing.expect(result = int8_from_f32(value));
+    try std.testing.expect(result == 1);
+}
+
+test "int8_from_f32_round_up" {
+    given value = 1.6
+    try std.testing.expect(result = int8_from_f32(value));
+    try std.testing.expect(result == 2);
+}
+
+test "int8_from_f32_round_down" {
+    given value = 1.4
+    try std.testing.expect(result = int8_from_f32(value));
+    try std.testing.expect(result == 1);
+}
+
+test "int8_from_f32_nan" {
+    given result = int8_from_f32(std.math.nan(f32))
+    try std.testing.expect(result == 0);
+}
+
+test "int8_to_i8_identity" {
+    given value: Int8 = 42
+    try std.testing.expect(result = int8_to_i8(value));
+    try std.testing.expect(result == 42);
+}
+
+test "int8_to_i16_sign_extend" {
+    given value: Int8 = -1
+    try std.testing.expect(result = int8_to_i16(value));
+    try std.testing.expect(result == -1);
+}
+
+test "int8_to_i32_sign_extend" {
+    given value: Int8 = -1
+    try std.testing.expect(result = int8_to_i32(value));
+    try std.testing.expect(result == -1);
+}
+
+test "int8_to_u8_positive" {
+    given value: Int8 = 42
+    try std.testing.expect(result = int8_to_u8(value));
+    try std.testing.expect(result.? == 42);
+}
+
+test "int8_to_u8_negative" {
+    given value: Int8 = -1
+    try std.testing.expect(result = int8_to_u8(value));
+    try std.testing.expect(result == null);
+}
+
+test "int8_add_simple" {
+    given a: Int8 = 50
+    try std.testing.expect(b: Int8 = 30);
+    try std.testing.expect(result = int8_add(a, b));
+    try std.testing.expect(result == 80);
+}
+
+test "int8_add_overflow" {
+    given a: Int8 = 100
+    try std.testing.expect(b: Int8 = 50);
+    try std.testing.expect(result = int8_add(a, b));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_add_underflow" {
+    given a: Int8 = -100
+    try std.testing.expect(b: Int8 = -50);
+    try std.testing.expect(result = int8_add(a, b));
+    try std.testing.expect(result == MIN);
+}
+
+test "int8_sub_simple" {
+    given a: Int8 = 50
+    try std.testing.expect(b: Int8 = 30);
+    try std.testing.expect(result = int8_sub(a, b));
+    try std.testing.expect(result == 20);
+}
+
+test "int8_sub_negative" {
+    given a: Int8 = 30
+    try std.testing.expect(b: Int8 = 50);
+    try std.testing.expect(result = int8_sub(a, b));
+    try std.testing.expect(result == -20);
+}
+
+test "int8_mul_positive" {
+    given a: Int8 = 10
+    try std.testing.expect(b: Int8 = 5);
+    try std.testing.expect(result = int8_mul(a, b));
+    try std.testing.expect(result == 50);
+}
+
+test "int8_mul_negative" {
+    given a: Int8 = -10
+    try std.testing.expect(b: Int8 = 5);
+    try std.testing.expect(result = int8_mul(a, b));
+    try std.testing.expect(result == -50);
+}
+
+test "int8_mul_overflow" {
+    given a: Int8 = 20
+    try std.testing.expect(b: Int8 = 20);
+    try std.testing.expect(result = int8_mul(a, b));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_div_simple" {
+    given a: Int8 = 50
+    try std.testing.expect(b: Int8 = 5);
+    try std.testing.expect(result = int8_div(a, b));
+    try std.testing.expect(result == 10);
+}
+
+test "int8_div_by_zero_positive" {
+    given a: Int8 = 50
+    try std.testing.expect(b: Int8 = 0);
+    try std.testing.expect(result = int8_div(a, b));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_div_by_zero_negative" {
+    given a: Int8 = -50
+    try std.testing.expect(b: Int8 = 0);
+    try std.testing.expect(result = int8_div(a, b));
+    try std.testing.expect(result == MIN);
+}
+
+test "int8_mod_simple" {
+    given a: Int8 = 10
+    try std.testing.expect(b: Int8 = 3);
+    try std.testing.expect(result = int8_mod(a, b));
+    try std.testing.expect(result == 1);
+}
+
+test "int8_mod_by_zero" {
+    given a: Int8 = 10
+    try std.testing.expect(b: Int8 = 0);
+    try std.testing.expect(result = int8_mod(a, b));
+    try std.testing.expect(result == 0);
+}
+
+test "int8_pow_zero" {
+    given base: Int8 = 5
+    try std.testing.expect(exp: u8 = 0);
+    try std.testing.expect(result = int8_pow(base, exp));
+    try std.testing.expect(result == 1);
+}
+
+test "int8_pow_one" {
+    given base: Int8 = 5
+    try std.testing.expect(exp: u8 = 1);
+    try std.testing.expect(result = int8_pow(base, exp));
+    try std.testing.expect(result == 5);
+}
+
+test "int8_pow_two" {
+    given base: Int8 = 5
+    try std.testing.expect(exp: u8 = 2);
+    try std.testing.expect(result = int8_pow(base, exp));
+    try std.testing.expect(result == 25);
+}
+
+test "int8_pow_overflow" {
+    given base: Int8 = 20
+    try std.testing.expect(exp: u8 = 2);
+    try std.testing.expect(result = int8_pow(base, exp));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_and_simple" {
+    given a: Int8 = 0b10101010
+    try std.testing.expect(b: Int8 = 0b11001100);
+    try std.testing.expect(result = int8_and(a, b));
+    try std.testing.expect(result == 0b10001000);
+}
+
+test "int8_or_simple" {
+    given a: Int8 = 0b10101010
+    try std.testing.expect(b: Int8 = 0b11001100);
+    try std.testing.expect(result = int8_or(a, b));
+    try std.testing.expect(result == 0b11101110);
+}
+
+test "int8_xor_simple" {
+    given a: Int8 = 0b10101010
+    try std.testing.expect(b: Int8 = 0b11001100);
+    try std.testing.expect(result = int8_xor(a, b));
+    try std.testing.expect(result == 0b01100110);
+}
+
+test "int8_not_simple" {
+    given value: Int8 = 0b10101010
+    try std.testing.expect(result = int8_not(value));
+    try std.testing.expect(result == 0b01010101);
+}
+
+test "int8_shl_simple" {
+    given value: Int8 = 0b00000011
+    try std.testing.expect(amount: u8 = 2);
+    try std.testing.expect(result = int8_shl(value, amount));
+    try std.testing.expect(result == 0b00001100);
+}
+
+test "int8_shl_overflow" {
+    given value: Int8 = 64
+    try std.testing.expect(amount: u8 = 2);
+    try std.testing.expect(result = int8_shl(value, amount));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_shr_simple" {
+    given value: Int8 = 0b00001100
+    try std.testing.expect(amount: u8 = 2);
+    try std.testing.expect(result = int8_shr(value, amount));
+    try std.testing.expect(result == 0b00000011);
+}
+
+test "int8_rol_simple" {
+    given value: Int8 = 0b00000011
+    try std.testing.expect(amount: u8 = 2);
+    try std.testing.expect(result = int8_rol(value, amount));
+    try std.testing.expect(result == 0b00001100);
+}
+
+test "int8_ror_simple" {
+    given value: Int8 = 0b00001100
+    try std.testing.expect(amount: u8 = 2);
+    try std.testing.expect(result = int8_ror(value, amount));
+    try std.testing.expect(result == 0b00000011);
+}
+
+test "int8_abs_positive" {
+    given value: Int8 = 42
+    try std.testing.expect(result = int8_abs(value));
+    try std.testing.expect(result == 42);
+}
+
+test "int8_abs_negative" {
+    given value: Int8 = -42
+    try std.testing.expect(result = int8_abs(value));
+    try std.testing.expect(result == 42);
+}
+
+test "int8_abs_min" {
+    given value: Int8 = MIN
+    try std.testing.expect(result = int8_abs(value));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_neg_positive" {
+    given value: Int8 = 42
+    try std.testing.expect(result = int8_neg(value));
+    try std.testing.expect(result == -42);
+}
+
+test "int8_neg_negative" {
+    given value: Int8 = -42
+    try std.testing.expect(result = int8_neg(value));
+    try std.testing.expect(result == 42);
+}
+
+test "int8_neg_min" {
+    given value: Int8 = MIN
+    try std.testing.expect(result = int8_neg(value));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_sign_positive" {
+    given value: Int8 = 42
+    try std.testing.expect(result = int8_sign(value));
+    try std.testing.expect(result == 1);
+}
+
+test "int8_sign_negative" {
+    given value: Int8 = -42
+    try std.testing.expect(result = int8_sign(value));
+    try std.testing.expect(result == -1);
+}
+
+test "int8_sign_zero" {
+    given value: Int8 = 0
+    try std.testing.expect(result = int8_sign(value));
+    try std.testing.expect(result == 0);
+}
+
+test "int8_min_smaller" {
+    given a: Int8 = 42
+    try std.testing.expect(b: Int8 = 50);
+    try std.testing.expect(result = int8_min(a, b));
+    try std.testing.expect(result == 42);
+}
+
+test "int8_max_larger" {
+    given a: Int8 = 42
+    try std.testing.expect(b: Int8 = 50);
+    try std.testing.expect(result = int8_max(a, b));
+    try std.testing.expect(result == 50);
+}
+
+test "int8_clamp_in_range" {
+    given value: Int8 = 42
+    try std.testing.expect(min: Int8 = 0);
+    try std.testing.expect(max: Int8 = 100);
+    try std.testing.expect(result = int8_clamp(value, min, max));
+    try std.testing.expect(result == 42);
+}
+
+test "int8_clamp_below" {
+    given value: Int8 = -50
+    try std.testing.expect(min: Int8 = 0);
+    try std.testing.expect(max: Int8 = 100);
+    try std.testing.expect(result = int8_clamp(value, min, max));
+    try std.testing.expect(result == 0);
+}
+
+test "int8_clamp_above" {
+    given value: Int8 = 150
+    try std.testing.expect(min: Int8 = 0);
+    try std.testing.expect(max: Int8 = 100);
+    try std.testing.expect(result = int8_clamp(value, min, max));
+    try std.testing.expect(result == 100);
+}
+
+test "int8_lerp_zero" {
+    given a: Int8 = 10
+    try std.testing.expect(b: Int8 = 50);
+    try std.testing.expect(t = 0.0);
+    try std.testing.expect(result = int8_lerp(a, b, t));
+    try std.testing.expect(result == 10);
+}
+
+test "int8_lerp_one" {
+    given a: Int8 = 10
+    try std.testing.expect(b: Int8 = 50);
+    try std.testing.expect(t = 1.0);
+    try std.testing.expect(result = int8_lerp(a, b, t));
+    try std.testing.expect(result == 50);
+}
+
+test "int8_lerp_half" {
+    given a: Int8 = 0
+    try std.testing.expect(b: Int8 = 20);
+    try std.testing.expect(t = 0.5);
+    try std.testing.expect(result = int8_lerp(a, b, t));
+    try std.testing.expect(result == 10);
+}
+
+test "int8_sq_positive" {
+    given value: Int8 = 10
+    try std.testing.expect(result = int8_sq(value));
+    try std.testing.expect(result == 100);
+}
+
+test "int8_sq_negative" {
+    given value: Int8 = -10
+    try std.testing.expect(result = int8_sq(value));
+    try std.testing.expect(result == 100);
+}
+
+test "int8_sq_overflow" {
+    given value: Int8 = 20
+    try std.testing.expect(result = int8_sq(value));
+    try std.testing.expect(result == MAX);
+}
+
+test "int8_abs_diff_same" {
+    given a: Int8 = 42
+    try std.testing.expect(b: Int8 = 42);
+    try std.testing.expect(result = int8_abs_diff(a, b));
+    try std.testing.expect(result == 0);
+}
+
+test "int8_abs_diff_positive" {
+    given a: Int8 = 50
+    try std.testing.expect(b: Int8 = 30);
+    try std.testing.expect(result = int8_abs_diff(a, b));
+    try std.testing.expect(result == 20);
+}
+
+test "int8_sqrt_zero" {
+    given value: Int8 = 0
+    try std.testing.expect(result = int8_sqrt(value));
+    try std.testing.expect(result == 0);
+}
+
+test "int8_sqrt_one" {
+    given value: Int8 = 1
+    try std.testing.expect(result = int8_sqrt(value));
+    try std.testing.expect(result == 1);
+}
+
+test "int8_sqrt_four" {
+    given value: Int8 = 4
+    try std.testing.expect(result = int8_sqrt(value));
+    try std.testing.expect(result == 2);
+}
+
+test "int8_sqrt_sixteen" {
+    given value: Int8 = 16
+    try std.testing.expect(result = int8_sqrt(value));
+    try std.testing.expect(result == 4);
+}
+
+test "int8_sqrt_negative" {
+    given value: Int8 = -4
+    try std.testing.expect(result = int8_sqrt(value));
+    try std.testing.expect(result == 0);
+}
+
+test "int8_is_power_of_two_true" {
+    given value: Int8 = 8
+    try std.testing.expect(int8_is_power_of_two(value) == true);
+}
+
+test "int8_is_power_of_two_false" {
+    given value: Int8 = 6
+    try std.testing.expect(int8_is_power_of_two(value) == false);
+}
+
+test "int8_is_power_of_two_zero" {
+    given value: Int8 = 0
+    try std.testing.expect(int8_is_power_of_two(value) == false);
+}
+
+test "int8_count_ones_zero" {
+    given value: Int8 = 0
+    try std.testing.expect(result = int8_count_ones(value));
+    try std.testing.expect(result == 0);
+}
+
+test "int8_count_ones_all" {
+    given value: Int8 = 0xFF
+    try std.testing.expect(result = int8_count_ones(value));
+    try std.testing.expect(result == 8);
+}
+
+test "int8_count_ones_mixed" {
+    given value: Int8 = 0b10101010
+    try std.testing.expect(result = int8_count_ones(value));
+    try std.testing.expect(result == 4);
+}
+
+test "int8_count_zeros_zero" {
+    given value: Int8 = 0
+    try std.testing.expect(result = int8_count_zeros(value));
+    try std.testing.expect(result == 8);
+}
+
+test "int8_count_zeros_all" {
+    given value: Int8 = 0xFF
+    try std.testing.expect(result = int8_count_zeros(value));
+    try std.testing.expect(result == 0);
+}
+
+test "int8_reverse_bits_zero" {
+    given value: Int8 = 0
+    try std.testing.expect(result = int8_reverse_bits(value));
+    try std.testing.expect(result == 0);
+}
+
+test "int8_reverse_bits_one" {
+    given value: Int8 = 0b10000000
+    try std.testing.expect(result = int8_reverse_bits(value));
+    try std.testing.expect(result == 0b00000001);
+}
+
+test "int8_reverse_bits_all" {
+    given value: Int8 = 0xFF
+    try std.testing.expect(result = int8_reverse_bits(value));
+    try std.testing.expect(result == 0xFF);
+}
+
+// ============================================================================
+// Invariants
+// ============================================================================
+
+}
+invariant int8_bits_constant
+    assert BITS == 8
+
+invariant int8_min_is_negative_128
+    assert MIN == -128
+
+invariant int8_max_is_127
+    assert MAX == 127
+
+invariant int8_range_is_256
+    assert RANGE == 256
+
+invariant int8_mask_all_bits
+    assert MASK == 0xFF
+
+invariant int8_from_i16_min_saturates
+    assert int8_from_i16(-1000) == MIN
+
+invariant int8_from_i16_max_saturates
+    assert int8_from_i16(1000) == MAX
+
+invariant int8_to_i16_identity
+    given value: Int8 = 42
+    assert int8_from_i16(int8_to_i16(value)) == value
+
+invariant int8_to_u8_negative_null
+    assert int8_to_u8(-1) == null
+
+invariant int8_to_u8_positive_ok
+    given result = int8_to_u8(42)
+    assert result.? == 42
+
+invariant int8_add_zero
+    assert int8_add(42, 0) == 42
+
+invariant int8_sub_zero
+    assert int8_sub(42, 0) == 42
+
+invariant int8_mul_one
+    assert int8_mul(42, 1) == 42
+
+invariant int8_mul_zero
+    assert int8_mul(42, 0) == 0
+
+invariant int8_div_one
+    assert int8_div(42, 1) == 42
+
+invariant int8_pow_zero_one
+    assert int8_pow(42, 0) == 1
+
+invariant int8_pow_one_self
+    assert int8_pow(42, 1) == 42
+
+invariant int8_and_zero
+    assert int8_and(42, 0) == 0
+
+invariant int8_and_minus_one
+    assert int8_and(42, -1) == 42
+
+invariant int8_or_zero
+    assert int8_or(42, 0) == 42
+
+invariant int8_or_minus_one
+    assert int8_or(42, -1) == -1
+
+invariant int8_xor_zero
+    assert int8_xor(42, 0) == 42
+
+invariant int8_xor_self
+    assert int8_xor(42, 42) == 0
+
+invariant int8_not_double
+    given value: Int8 = 42
+    assert int8_not(int8_not(value)) == value
+
+invariant int8_abs_non_negative
+    given value: Int8 = -42
+    assert int8_abs(value) >= 0
+
+invariant int8_neg_twice_original
+    given value: Int8 = 42
+    try std.testing.expect(neg = int8_neg(value));
+    try std.testing.expect(neg_again = int8_neg(neg));
+    assert neg_again == value or value == MIN
+
+invariant int8_sign_positive_one
+    assert int8_sign(42) == 1
+
+invariant int8_sign_negative_minus_one
+    assert int8_sign(-42) == -1
+
+invariant int8_sign_zero_zero
+    assert int8_sign(0) == 0
+
+invariant int8_min_le_both
+    given a: Int8 = 42
+    try std.testing.expect(b: Int8 = 50);
+    try std.testing.expect(result = int8_min(a, b));
+    assert result <= a and result <= b
+
+invariant int8_max_ge_both
+    given a: Int8 = 42
+    try std.testing.expect(b: Int8 = 50);
+    try std.testing.expect(result = int8_max(a, b));
+    assert result >= a and result >= b
+
+invariant int8_lerp_zero_start
+    given a: Int8 = 10
+    try std.testing.expect(b: Int8 = 50);
+    assert int8_lerp(a, b, 0.0) == a
+
+invariant int8_lerp_one_end
+    given a: Int8 = 10
+    try std.testing.expect(b: Int8 = 50);
+    assert int8_lerp(a, b, 1.0) == b
+
+invariant int8_sq_non_negative
+    given value: Int8 = 42
+    try std.testing.expect(result = int8_sq(value));
+    assert result >= 0
+
+invariant int8_sqrt_square_original_or_less
+    given value: Int8 = 42
+    try std.testing.expect(sqrt_result = int8_sqrt(value));
+    try std.testing.expect(sqrt_sq = int8_sq(sqrt_result));
+    assert sqrt_sq <= value
+
+invariant int8_count_ones_plus_count_zeros_equals_bits
+    given value: Int8 = 42
+    assert int8_count_ones(value) + int8_count_zeros(value) == BITS
+
+invariant int8_reverse_bits_double
+    given value: Int8 = 42
+    assert int8_reverse_bits(int8_reverse_bits(value)) == value
+
+// ============================================================================
+// Benchmarks
+// ============================================================================
+
+bench int8_add_latency
+    measure: nanoseconds to int8_add(42, 30)
+    target: < 5ns
+
+bench int8_mul_latency
+    measure: nanoseconds to int8_mul(10, 5)
+    target: < 5ns
+
+bench int8_abs_latency
+    measure: nanoseconds to int8_abs(-42)
+    target: < 5ns
+
+bench int8_from_f32_latency
+    measure: nanoseconds to int8_from_f32(42.5)
+    target: < 20ns
+
+bench int8_sqrt_latency
+    measure: nanoseconds to int8_sqrt(42)
+    target: < 50ns

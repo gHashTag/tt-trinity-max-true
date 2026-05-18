@@ -1,0 +1,11 @@
+{
+  "gen_hash_c": "sha256:62acf45fb4f3ff78c28e44d709358453ee9adcd0af1f58ea2621cf55fe4f22b8",
+  "gen_hash_rust": "sha256:431f197f6dc79bcc5b3643805aa77a270fba2ab71e2832b1c04777a463a0bb00",
+  "gen_hash_verilog": "sha256:fe5404659fea53e561ed4beb08493f0ae70ccee1cf67ad41f8e43024dc65cfee",
+  "gen_hash_zig": "sha256:ed92ef227e0449f8ffaa4b2eef934d2be7f786be1c1e7a600b64682da7754503",
+  "module": "fbb-active-path",
+  "ring": 12,
+  "sealed_at": "2026-05-18T04:13:11Z",
+  "spec_hash": "sha256:fa7339fbc62c69d3c8cf93dbfff307d4ff68314f0365d2466bd1fc9016b2ffcc",
+  "spec_path": "specs/fpga/fbb_active_path.t27"
+}

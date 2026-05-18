@@ -1,0 +1,11 @@
+{
+  "gen_hash_c": "sha256:d5f7789716bda8be58cbfd0d86901e40b9a6da00e4253342bf96621ddb404031",
+  "gen_hash_rust": "sha256:568aab4c47fa1fcd3b4a2a65be04eb83ebd15eb6399b7a11fa96cf24162d465f",
+  "gen_hash_verilog": "sha256:73ac4d6807d6e9ced00082142f92b2b75c7afcaf2ffb1fe16b56e3c94269a516",
+  "gen_hash_zig": "sha256:337c4bf3894d642bb3437e515a96b9e43ec01e7041ff7002bd786d93bd17a781",
+  "module": "sacred-lut_npu_81_entry",
+  "ring": 12,
+  "sealed_at": "2026-05-18T04:13:11Z",
+  "spec_hash": "sha256:3b0d082b74f6a0ba7039d726899c4a02710622f702909956f8bc2615b6a45b8a",
+  "spec_path": "specs/fpga/lut_npu_81_entry.t27"
+}

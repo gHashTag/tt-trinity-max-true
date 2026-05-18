@@ -1,0 +1,11 @@
+{
+  "gen_hash_c": "sha256:f344a9881358b160a588be2162d1e5a9a123775b1c87c62c5ff38525d6d5732d",
+  "gen_hash_rust": "sha256:0706a0e514116c0f8d7fb29f4b6e363bd9ed8775f6bf6d89f6d662e071b3c17e",
+  "gen_hash_verilog": "sha256:792368438b13631efb4b7f1ed13b11b7294fff38d15d0ec790c2611c0f91c0c2",
+  "gen_hash_zig": "sha256:09c0864ad0187def921a7b1bf53958d451ae33a2477cda016911b8107c09f62a",
+  "module": "sacred-lane_precheck",
+  "ring": 12,
+  "sealed_at": "2026-05-18T04:13:11Z",
+  "spec_hash": "sha256:1954284a2f9b5b29dff46df7365664c2337d70054c222bb69019dffeb8631f98",
+  "spec_path": "specs/fpga/lane_l_precheck.t27"
+}

@@ -1,0 +1,11 @@
+{
+  "gen_hash_c": "sha256:203b554fffc3fca4e94750e38e922ef6810bd165f0e78d5e957ee481d2d5c4ba",
+  "gen_hash_rust": "sha256:16ca0df88564379ffb079dfa7339b2eb0432d907a64c5f2b0d86530268973b35",
+  "gen_hash_verilog": "sha256:9478eef4cfee377d2758af02d2f5cab518ba60b16c436ce654d57c9f0c17bab9",
+  "gen_hash_zig": "sha256:810956a4b309154b5a6c853c24daef6a1dc61f44a1df565fdd2bfd11e1fe9ef3",
+  "module": "sacred-stoch_round",
+  "ring": 12,
+  "sealed_at": "2026-05-18T04:13:11Z",
+  "spec_hash": "sha256:e3997228a0ea792965b7825f7b685c27f972c5140c8d2a5ce3f434e27a9de5bf",
+  "spec_path": "specs/fpga/stoch_round.t27"
+}

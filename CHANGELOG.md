@@ -5,6 +5,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- `docs/API.md` — Complete API documentation with module interfaces
+- `docs/ARCHITECTURE.md` — ASCII architecture diagrams (system overview, cortical column, D2D mesh, power management, TOPS/W boost)
+- `docs/COMPARISON.md` — Cross-chip comparison matrix (phi/euler/gamma)
+- Performance benchmarks section in README with throughput, latency, area, power tables
+- Additional testbenches for quantization and compute modules
+
+### Changed
+- Updated README with unified badge order and TRI-NET cross-references section
+- Improved test coverage across all quantization modules
+
+---
+
 ## [TTSKY26b-submit] — 2026-05-17
 
 ### Tape-out

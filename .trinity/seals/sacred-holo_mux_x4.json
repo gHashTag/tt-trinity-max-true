@@ -1,0 +1,11 @@
+{
+  "gen_hash_c": "sha256:74064be474f8ea4a40cbf4e79b824d860c042ec78df8990fcf1f3324bf1b5d00",
+  "gen_hash_rust": "sha256:0e7a6d69904082e48b54db39641baf30451f960b7597d829d7080d6491c94984",
+  "gen_hash_verilog": "sha256:96b27d86f6406ee09e6263bf5e45a7eed0c7672c48fdffa5261e6664ba211b60",
+  "gen_hash_zig": "sha256:e2eb66ab889938d66dea5e678b3370b7eca284824f29e252100aee2cee889bb4",
+  "module": "sacred-holo_mux_x4",
+  "ring": 12,
+  "sealed_at": "2026-05-18T04:13:11Z",
+  "spec_hash": "sha256:8879f6761c27c51c6c8ed11a13974ac5935ae6e9776cc04f64ca8ff0ac4169d2",
+  "spec_path": "specs/fpga/holo_mux_x4.t27"
+}

@@ -1,0 +1,11 @@
+{
+  "gen_hash_c": "sha256:6c68fc8f695b2435e16ccd90ea13b9f6ce0f75de963d162efc9757aaf81635bf",
+  "gen_hash_rust": "sha256:79c79e9452e84f03b11b85a163205c665efd09c9495d13015460940cea233b4f",
+  "gen_hash_verilog": "sha256:477a0579b846fccfba364b9cb4ca661ed863e497f4ff7b38714a77324f0be360",
+  "gen_hash_zig": "sha256:46585a4542373d7f9ad1105aa6f03dcfd11484c96f85c71c2d5c8bfe68e9bb92",
+  "module": "avs-controller-48",
+  "ring": 12,
+  "sealed_at": "2026-05-18T04:13:11Z",
+  "spec_hash": "sha256:1f82c3d43ab817edee9631be25b837a90b43651b9f24c7ac8293584454dfe274",
+  "spec_path": "specs/fpga/avs_controller_48.t27"
+}

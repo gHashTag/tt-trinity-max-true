@@ -1,0 +1,11 @@
+{
+  "gen_hash_c": "sha256:f5257d83e77506621977a287f02d23c07f7d5d679ca3b0dc667033017acbd06f",
+  "gen_hash_rust": "sha256:ffc3629d85ad54215d29f5cd292873886ea53f953aa2d8703a10b48e6227c31a",
+  "gen_hash_verilog": "sha256:d6b8b44ec1ee714ed6cbbdcb4740a7d022810742100f00c2e0642b0defa71886",
+  "gen_hash_zig": "sha256:52622123329d8c0eb1d7000e245513ed123e4752886eb64c4a1b73a1a1c69572",
+  "module": "purkinje-thermal-gate",
+  "ring": 12,
+  "sealed_at": "2026-05-18T04:13:11Z",
+  "spec_hash": "sha256:dee60af3f5bdab663b83f635338e9ef8d99b4901ca774edd2ac9e4e5d25de499",
+  "spec_path": "specs/fpga/purkinje_thermal_gate.t27"
+}

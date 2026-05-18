@@ -1,0 +1,11 @@
+{
+  "gen_hash_c": "sha256:e70cd370810dcf449bc605d57736192166dff399cd5b7d005fbe4c5e6085986b",
+  "gen_hash_rust": "sha256:cde26ec2e4b84131dcb6acaf8282c59405ada334a2a88a05788cbc1a4aec6586",
+  "gen_hash_verilog": "sha256:aafa6f5f242adfbca3ef667faecf948b353f601aeb889d65beb1aa4e58eb850c",
+  "gen_hash_zig": "sha256:22ab093630ffaacaacf9ae4a1c7ed824f644cbd2cdd99fa008ecbd781197d365",
+  "module": "sacred-spec_exit",
+  "ring": 12,
+  "sealed_at": "2026-05-18T04:13:11Z",
+  "spec_hash": "sha256:e23ef09c0f4e88517e32c8c48d183468cb808d9676f2311a4a229e0f43895505",
+  "spec_path": "specs/fpga/spec_exit.t27"
+}

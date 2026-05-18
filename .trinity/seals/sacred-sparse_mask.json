@@ -1,0 +1,11 @@
+{
+  "gen_hash_c": "sha256:3537658e394058086aa7f199e67e2d1000a01ad68f208113b2b08b144c5eec74",
+  "gen_hash_rust": "sha256:05cdbe55f695476a5375f39543a1a19905d16d88af0e9fc578f68f35e4b98319",
+  "gen_hash_verilog": "sha256:e43d805b707821996b84c39c502dc9b68ce636664838a73b5dd140c0dbf3735c",
+  "gen_hash_zig": "sha256:8e145762944a861815b182494f1ad051d7365df3c1edbafebacccf9e6d92b088",
+  "module": "sacred-sparse_mask",
+  "ring": 12,
+  "sealed_at": "2026-05-18T04:13:11Z",
+  "spec_hash": "sha256:ff3d757f5e91373910923758a5bc7a8f26fde4d157e3d3aee120210996c45f0c",
+  "spec_path": "specs/fpga/sparse_mask.t27"
+}

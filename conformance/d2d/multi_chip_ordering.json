@@ -1,0 +1,28 @@
+{
+  "$schema_version": "1.0",
+  "name": "d2d_multi_chip_ordering",
+  "claim_ids": ["TN-D2D-05"],
+  "scenario": "per_direction_fifo_ordering_across_triad",
+  "description": "Across the TRI-1 triad (Phi master / Euler compute slave / Gamma neuromorphic slave), packets sent in order on a given direction (N/E/S/W) MUST be observed in the same order on γ's RX latches. Ordering is per-direction; cross-direction ordering is not asserted.",
+  "topology": {
+    "master": {"chip": "tt-trinity-phi", "tt_slot": 4914},
+    "compute_slave": {"chip": "tt-trinity-euler", "tt_slot": 4915},
+    "neuromorphic_slave": {"chip": "tt-trinity-gamma", "tt_slot": 4913, "this_repo": true}
+  },
+  "stimulus": [
+    {"direction": "N", "sequence": ["A", "B", "C"]},
+    {"direction": "E", "sequence": ["X", "Y"]}
+  ],
+  "expected_rx_latches": {
+    "n_rx_q": ["A", "B", "C"],
+    "e_rx_q": ["X", "Y"],
+    "ordering_rule": "per_direction_fifo",
+    "cross_direction_ordering": "unspecified"
+  },
+  "witness_rtl": [
+    "src/d2d_holo_mesh.v",
+    "src/trinity_quad_mesh.v"
+  ],
+  "witness_testbench": "sim/tb_canonical.v",
+  "anti_claim": "If any per-direction RX latch observes a permutation of the sent sequence on that direction, the implementation violates TN-D2D-05."
+}

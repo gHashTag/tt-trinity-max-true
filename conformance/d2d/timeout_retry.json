@@ -1,0 +1,36 @@
+{
+  "$schema_version": "1.0",
+  "name": "d2d_timeout_retry",
+  "claim_ids": ["TN-D2D-07"],
+  "scenario": "rx_timeout_then_retry",
+  "description": "A D2D RX direction that fails to land within the host-defined timeout window must trigger exactly one retry of the same frame, and the audit log ring buffer must record the timeout-and-retry as an ordered pair (TIMEOUT followed by RETRY_OK or RETRY_FAIL).",
+  "protocol_note": "The γ-side RTL stub (`src/d2d_holo_mesh.v`) is a registered TX / latched RX path; timeout/retry is a host-side responsibility on top of the stub. This vector pins what the host expects to observe on the audit surface.",
+  "stimulus": {
+    "direction": "E",
+    "first_attempt": {"rx_observed_within_window": false, "timeout_units": "host_defined"},
+    "retry_attempt": {"rx_observed_within_window": true}
+  },
+  "expected": {
+    "audit_log_sequence": [
+      {"entry_kind": "TIMEOUT", "direction": "E"},
+      {"entry_kind": "RETRY_OK", "direction": "E"}
+    ],
+    "ordering": "strict",
+    "extra_entries_allowed": false,
+    "multi_tile_receipt": {
+      "frame_counter_advance": 1,
+      "rationale": "Exactly one logical frame was accepted after retry."
+    },
+    "blake3_anchor": {"state_mutated": "once_per_accepted_frame"}
+  },
+  "failure_mode_under_test": {
+    "name": "double_advance",
+    "description": "If both the timed-out attempt and the retry advance the frame counter, ordering is broken."
+  },
+  "witness_rtl": [
+    "src/d2d_holo_mesh.v",
+    "src/audit_log_ring_buffer.v",
+    "src/multi_tile_receipt.v"
+  ],
+  "anti_claim": "If the audit log shows a gap, a duplicate, or a TIMEOUT that is never followed by RETRY_OK / RETRY_FAIL on the same direction, the implementation violates TN-D2D-07."
+}

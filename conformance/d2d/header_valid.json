@@ -1,0 +1,33 @@
+{
+  "$schema_version": "1.0",
+  "name": "d2d_header_valid",
+  "claim_ids": ["TN-D2D-01", "TN-D2D-03"],
+  "scenario": "canonical_reset_anchor",
+  "description": "Valid D2D header observation at reset on γ-surface: the TG-TRIAD-X anchor `{uio_out, uo_out} == 16'h47C0` must be present at every canonical reset (ui_in[0]=0). This vector is the SPEC reference for the iverilog-canonical CI job and any external D2D conformance probe.",
+  "protocol": {
+    "doc": "docs/INTERCONNECT_PROTOCOL_V1.md",
+    "version": "TIP v1.0 (FROZEN at TTSKY26b)",
+    "doi": "10.5281/zenodo.19227877",
+    "doi_role": "external citation only; not measured silicon"
+  },
+  "inputs": {
+    "ui_in_bit0": 0,
+    "rst_n": "asserted_then_released",
+    "ena": 1,
+    "note": "All other ui_in bits = don't-care for the anchor check."
+  },
+  "expected": {
+    "concatenated_bus": "{uio_out, uo_out}",
+    "value_hex": "0x47C0",
+    "value_bin": "0100_0111_1100_0000",
+    "tolerance": "exact_match",
+    "first_cycle_after_reset": true
+  },
+  "witness_rtl": [
+    "src/tt_um_trinity_max_true.v",
+    "src/d2d_holo_mesh.v"
+  ],
+  "witness_testbench": "sim/tb_canonical.v",
+  "ci_job": ".github/workflows/test.yaml::iverilog-canonical",
+  "anti_claim": "If reset emits any value other than 0x47C0 on {uio_out, uo_out}, this header is INVALID."
+}

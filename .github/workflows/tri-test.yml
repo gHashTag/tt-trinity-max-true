@@ -31,6 +31,22 @@ jobs:
             echo "No GF format specs to validate"
           fi
 
+  trinet-spec-gate:
+    name: TRI-NET Spec Gate (claims coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run TRI-NET spec gate
+        run: |
+          if [ -x scripts/check_trinet_specs.sh ]; then
+            bash scripts/check_trinet_specs.sh
+          else
+            echo "scripts/check_trinet_specs.sh missing or not executable" >&2
+            exit 1
+          fi
+
   trios-coq-validation:
     name: Coq Proofs Validation
     runs-on: ubuntu-latest

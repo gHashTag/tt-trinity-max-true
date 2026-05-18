@@ -1,0 +1,86 @@
+{
+  "$schema_version": "1.0",
+  "name": "nmse_gf16_bf16",
+  "claim_ids": ["TN-NF-01", "TN-NF-02", "TN-NF-03"],
+  "description": "Golden vector set for the GF16 vs bfloat16 NMSE comparison protocol described in GF16_BFLOAT16_NMSE.md. These vectors pin the seeds, input distributions, reference baseline, and tolerance bands a candidate harness MUST honour. No row claims a measured silicon NMSE; the `nmse_*_db_expected` fields are SPEC tolerance bands, not observations.",
+  "r5_honesty": {
+    "measured_silicon": false,
+    "harness_committed": false,
+    "harness_planned_path": "tools/nmse_gf16_bf16.py",
+    "doi_pinned": null,
+    "note": "All numbers below are SPEC bounds. A measured run lands under docs/silicon/ and cites this vector set by name + sha256 to be considered valid under the protocol."
+  },
+  "protocol": {
+    "doc": "GF16_BFLOAT16_NMSE.md",
+    "doc_sections": ["§3 NMSE definition", "§5 Input distribution and sample count", "§6 Reproduction harness"],
+    "nmse_definition": "NMSE(y_fmt) = sum_i (y_fmt[i] - y_ref[i])^2 / sum_i y_ref[i]^2",
+    "report_unit": "dB (10 * log10(NMSE))",
+    "delta_db_definition": "Delta_dB = NMSE_GF16_dB - NMSE_bf16_dB; positive => GF16 worse; negative => GF16 better",
+    "competitive_threshold_delta_db_max": 0.0,
+    "reference_precision": "fp64",
+    "reference_algorithm": "bit-exact same reduction as candidate; no fused MAC tricks",
+    "rtl_hash_required": true,
+    "t27_release_tag_required": true
+  },
+  "formats": {
+    "GF16": {
+      "bits": 16, "sign": 1, "exp": 6, "mant": 9, "bias": 31,
+      "source_spec": "specs/numeric/gf16.t27",
+      "rtl_path": "src/gf16_*.v",
+      "claim_id": "TN-NF-01"
+    },
+    "BF16": {
+      "bits": 16, "sign": 1, "exp": 8, "mant": 7, "bias": 127,
+      "source_spec": "conformance/FORMAT-SPEC-001.json (tri_net_extended_formats.BF16)",
+      "rtl_path": null,
+      "host_only": true,
+      "claim_id": "TN-NF-02"
+    }
+  },
+  "workloads": [
+    {
+      "id": "WL1_bitnet_b158_microkernel",
+      "label": "BitNet b1.58 micro-kernel (Demo 1)",
+      "rtl_under_test": [
+        "src/cortical_column.v",
+        "src/vsa_matmul_8x8.v",
+        "src/vsa_matmul_16x16.v",
+        "src/bitnet_encoder.v"
+      ],
+      "input_distribution": {
+        "activations": {"family": "normal", "mean": 0.0, "std": 1.0},
+        "weights": {"family": "categorical_uniform", "support": [-1, 0, 1], "label": "BitNet b1.58 ternary"}
+      },
+      "samples_min": 10000,
+      "seeds": [0, 1, 7, 42, 1337],
+      "primary_seed": 0,
+      "reference_precision": "fp64",
+      "nmse_gf16_db_expected": {"tolerance_band_db": [-60.0, -20.0], "note": "SPEC band, not measured"},
+      "nmse_bf16_db_expected": {"tolerance_band_db": [-60.0, -20.0], "note": "SPEC band, not measured"},
+      "delta_db_expected": {"max_for_competitive": 0.0, "note": "Δ_dB ≤ +0 required to publish 'GF16 competitive at WL1'"},
+      "verdict_enum": ["GF16-competitive", "GF16-worse", "INVALID"],
+      "tolerance_numerical_eps": 1e-9,
+      "claim_id": "TN-NF-03"
+    },
+    {
+      "id": "WL2_adversarial_path",
+      "label": "Adversarial / CLARA refusal path (Demo 2)",
+      "nmse_applies": false,
+      "reason": "Output surface is K3 (TRUE/UNKNOWN/FALSE), not a numeric vector. Demo 2 uses pass/fail rules, not NMSE.",
+      "claim_id": "TN-NF-03"
+    },
+    {
+      "id": "WL3_receipt_mesh_route",
+      "label": "Proof-trace / audit-receipt mesh route (Demo 3)",
+      "nmse_applies": false,
+      "reason": "Output is a hash; exact match required. NMSE does not apply.",
+      "claim_id": "TN-NF-03"
+    }
+  ],
+  "invariants": [
+    "GF16 field widths in `specs/numeric/gf16.t27` must match (sign=1, exp=6, mant=9, bias=31).",
+    "BF16 field widths in `conformance/FORMAT-SPEC-001.json` must match (sign=1, exp=8, mant=7, bias=127).",
+    "Any run with samples < samples_min is INVALID under the protocol.",
+    "Any run without `rtl_hash` and `t27_release_tag` pinned is INVALID."
+  ]
+}

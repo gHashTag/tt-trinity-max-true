@@ -405,6 +405,34 @@ module tt_um_trinity_max_true (
         .multi_rcpt_ok(multi_rcpt_ok)
     );
 
+    // =================================================================
+    // $TRI TOKEN ACCUMULATOR (DePIN proof-of-compute, Gamma reward=4)
+    // attest_pulse: rising-edge of all_attested from multi_tile_receipt
+    // reward_amount: 3'd4 (gamma 8x4 — highest weight, largest die)
+    // R-SI-1: no standalone * in tri_token_accumulator.v
+    // =================================================================
+    reg  all_attested_d;
+    wire attest_pulse_w;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) all_attested_d <= 1'b0;
+        else        all_attested_d <= all_attested;
+    end
+    assign attest_pulse_w = all_attested & ~all_attested_d;
+
+    wire [15:0] tri_balance;
+    wire        tri_overflow;
+    tri_token_accumulator #(
+        .WIDTH      (16),
+        .REWARD_BITS(3)
+    ) u_tri_acc (
+        .clk          (clk),
+        .rst_n        (rst_n),
+        .attest_pulse (attest_pulse_w),
+        .reward_amount(3'd4),
+        .token_balance(tri_balance),
+        .overflow_flag(tri_overflow)
+    );
+
     // L-S15: Trinity ternary ALU-9 decoder
     wire [1:0] alu_result;
     wire       alu_valid;
@@ -624,13 +652,19 @@ module tt_um_trinity_max_true (
     //   uio_oe[3:0] = {1,1,1,1} except [1] = 0 (friend/foe RX)
     //   NOTE: uio[7:4] are D2D RX (inputs) → uio_oe[7:4] = 4'b0000
     // =================================================================
+    // ui_in[4:2]==3'b111: $TRI token balance readout (NEW, R-SI-1 safe)
+    // Existing modes fully preserved; canonical 0x47C0 on reset unchanged.
+    wire tri_status_mode = (ui_in[4:2] == 3'b111);
+
     wire [7:0] uio_legacy =
         crown_mode              ? 8'h00 :
+        tri_status_mode         ? tri_balance[15:8] :
         (ui_in[0] && post_done) ? status_byte :
                                    (final_result[15:8] | input_echo[15:8]);
 
-    assign uo_out  = crown_mode ? crown_byte_raw
-                                : (final_result[7:0] | input_echo[7:0]);
+    assign uo_out  = crown_mode       ? crown_byte_raw
+                   : tri_status_mode  ? tri_balance[7:0]
+                                      : (final_result[7:0] | input_echo[7:0]);
 
     // uio_out:
     //   [7:4] = legacy upper nibble (CANONICAL_HI on reset = 4'h4)
@@ -655,7 +689,7 @@ module tt_um_trinity_max_true (
                      enc_done, enc_y,
                      bpb_total[23:8], bpb_samples,
                      hash_done, hash_digest,
-                     all_attested, agg_job_id, attested_mask,
+                     agg_job_id, attested_mask,
                      alu_result, alu_valid,
                      ring_rd, phi_tick, phi_state,
                      wb_dat_r, wb_ack,
@@ -665,10 +699,11 @@ module tt_um_trinity_max_true (
                      nca_in_band, nca_popcount,
                      seed_safe, seed_replaced,
                      phi_dist[14:0],
-                     ui_in[7:4],
+                     ui_in[7:5],
                      ff_tx, ff_friend, ff_valid,
                      d2d_n_rx_q, d2d_e_rx_q, d2d_s_rx_q, d2d_w_rx_q,
                      holo_out, holo_valid_out,
+                     tri_overflow,
                      1'b0};
 
 endmodule

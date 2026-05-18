@@ -57,6 +57,41 @@ not yet returned. See [`STATUS.md`](STATUS.md) for the readiness ladder,
 for the CLARA-gap → RTL matrix, and [`BENCHMARKS.md`](BENCHMARKS.md) for
 the three measurable demo workloads.
 
+### R5-honest claim-status legend
+
+Every numerical claim in the TRI-NET γ-surface docs carries a status tag.
+Reviewers should not compare a `MODEL` or `SPEC` row against a competitor's
+silicon-measured data sheet without an explicit qualifier.
+
+| Tag | Meaning | Example artefact |
+|-----|---------|------------------|
+| ✅ `RTL` | In-tree Verilog elaborates; behaviour is verifiable by simulation today | `src/fbb_active_path.v`, `src/d2d_holo_mesh.v` |
+| ✅ `SIM` | Simulation pass exists in this repo | `sim/tb_canonical.v` → `0x47C0` |
+| 🟡 `SPEC` / `PROTOCOL` | Specification only; harness/RTL still planned | `docs/specs/TRIPLE_DECKER_FSM.md` |
+| 🟡 `WITNESS` | Rust witness crate pins a parameter band; no silicon RTL | `crates/rbb-witness/`, `crates/cap-boost-witness/` |
+| 🟡 `MODEL` | Synthesis-activity-factor / analytical model only (no measurement) | `75 → 405` TOPS/W pre-silicon estimate |
+| ⛔ `SILICON` | **Not present in this repo for any claim.** No returned die has been measured. |
+
+### Verification assets (added in PR #72)
+
+| Asset | What it pins | Path |
+|-------|--------------|------|
+| **Claims matrix** | 20 TRI-NET numerical claims (`TN-NF/D2D/TD/WL-*`) with Location, Evidence, Harness, Status, Anti-claim | [`docs/VERIFICATION_CLAIMS_MATRIX.md`](docs/VERIFICATION_CLAIMS_MATRIX.md) |
+| **Golden NMSE vectors** | Seeds, BitNet 1.58 distribution, fp64 reference, tolerance bands for GF16 vs bfloat16 NMSE | [`tests/vectors/nmse_gf16_bf16.golden.json`](tests/vectors/nmse_gf16_bf16.golden.json) |
+| **D2D conformance** | 5 scenarios: `header_valid`, `bad_crc`, `unsupported_opcode`, `timeout_retry`, `multi_chip_ordering` | [`conformance/d2d/`](conformance/d2d/) |
+| **Triple-Decker FSM spec** | `RBB → FBB_ACTIVE → CAP_BOOST → COOLDOWN → IDLE` with guards, cooldown, brownout/overcurrent fallback | [`docs/specs/TRIPLE_DECKER_FSM.md`](docs/specs/TRIPLE_DECKER_FSM.md) |
+| **Spec CI gate** | `t27c` parse (optional, skipped if absent) + mandatory claims-coverage check; wired into `trinet-spec-gate` job | [`scripts/check_trinet_specs.sh`](scripts/check_trinet_specs.sh) |
+| **Release manifest (intended Zenodo metadata)** | Files / SHA-256 hashes / creators / related-identifier placeholders. **No DOI is minted until Zenodo deposition is actually published.** | [`docs/RELEASE_MANIFEST_TRINET_V1.md`](docs/RELEASE_MANIFEST_TRINET_V1.md), [`.zenodo.json`](.zenodo.json) |
+| **Architecture quick wins (γ-side)** | Competitor-grounded fast wins: Loihi-2-style spike framing, GALS/mode-switch power-delta evidence path, Lava/MetaTF adapter stub plan | [`docs/ARCHITECTURE_QUICK_WINS.md`](docs/ARCHITECTURE_QUICK_WINS.md) |
+
+Run the gate locally:
+
+```bash
+bash scripts/check_trinet_specs.sh
+# PASS → all TN-* IDs referenced in canonical docs have a row in the matrix
+# (t27c parse is skipped cleanly if t27c is not on PATH)
+```
+
 ---
 
 **Largest chip of the TRI-1 Triad.** 32 tiles (8×4) of SkyWater SKY130A silicon — the world's first open-PDK neuromorphic chip with **8 cortical columns**, **20-PE GF16 mesh**, **24 SUPER-CROWN modules**, **D2D holographic mesh**, and the full **Crown47 ROM** encoding 47 fundamental constants of physics.

@@ -1,0 +1,72 @@
+{
+  "$comment": "Intended Zenodo metadata for a future deposition of the TRI-NET γ-surface verification bundle. This file is NOT a deposition. No DOI is minted by checking this file into the repo; only the legacy φ²+φ⁻²=3 anchor DOI 10.5281/zenodo.19227877 (already referenced by the project) is asserted by this commit. See docs/RELEASE_MANIFEST_TRINET_V1.md for the artifact list, hashes, and anti-claims.",
+  "title": "TRI-NET γ-surface — Verification hardening bundle v1 (claims matrix, D2D conformance, Triple-Decker FSM spec, NMSE golden vectors)",
+  "upload_type": "software",
+  "description": "Repository snapshot of tt-trinity-gamma at the TRI-NET verification hardening milestone. The bundle pins (a) a 20-row falsifiable numerical claims matrix; (b) a D2D conformance vector pack (5 scenarios); (c) a Triple-Decker FSM specification (RBB → FBB → CAP_BOOST → IDLE with cooldown / brownout / overcurrent fallback); (d) a golden vector set for the GF16 vs bfloat16 NMSE protocol; (e) a CI spec gate. No silicon measurement is included. Pre-silicon estimates are tagged as such throughout (R5 honesty).",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "affiliation": "t27.ai",
+      "$comment": "Author identity inferred from src/d2d_holo_mesh.v header (`Author: Dmitrii Vasilev <admin@t27.ai>`). ORCID intentionally not asserted by this PR — must be filled in by the depositor before submission."
+    }
+  ],
+  "keywords": [
+    "TRI-NET",
+    "TT-Trinity",
+    "gamma-surface",
+    "neuromorphic",
+    "GF16",
+    "BitNet b1.58",
+    "ternary logic",
+    "K3 Kleene",
+    "open-PDK silicon",
+    "SkyWater SKY130A",
+    "Tiny Tapeout",
+    "verification",
+    "conformance"
+  ],
+  "license": "Apache-2.0",
+  "access_right": "open",
+  "communities": [],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.19227877",
+      "relation": "isDocumentedBy",
+      "scheme": "doi",
+      "$comment": "Legacy φ²+φ⁻²=3 anchor + TIP v1.0 protocol record, already referenced from docs/INTERCONNECT_PROTOCOL_V1.md. Pre-existing; not minted by this PR."
+    },
+    {
+      "identifier": "https://github.com/gHashTag/tt-trinity-gamma",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://github.com/gHashTag/tt-trinity-phi",
+      "relation": "isPartOf",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://github.com/gHashTag/tt-trinity-euler",
+      "relation": "isPartOf",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://github.com/gHashTag/t27",
+      "relation": "references",
+      "scheme": "url"
+    },
+    {
+      "identifier": "TBD-arxiv-id",
+      "relation": "isDocumentedBy",
+      "scheme": "arxiv",
+      "$comment": "Placeholder. No arXiv submission has occurred for this verification bundle. Do NOT fill until the preprint actually exists."
+    }
+  ],
+  "anti_claims": [
+    "No DOI is minted by the act of committing this file to the repository. A DOI exists only after a Zenodo deposition is published and Zenodo assigns one.",
+    "No silicon measurement is asserted by this bundle.",
+    "No funding source or program acceptance is claimed.",
+    "ORCID identifiers and arXiv IDs above are placeholders; they MUST be filled in by the depositor before submission."
+  ],
+  "$schema_note": "Format follows the Zenodo upload metadata schema as documented at https://developers.zenodo.org/#representation. Custom keys ($comment, $schema_note, anti_claims) are ignored by Zenodo's importer and exist only to document repo-side honesty constraints."
+}

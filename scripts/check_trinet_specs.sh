@@ -37,6 +37,8 @@ MATRIX="${ROOT}/docs/VERIFICATION_CLAIMS_MATRIX.md"
 CANONICAL_DOCS=(
   "${ROOT}/docs/VERIFICATION_CLAIMS_MATRIX.md"
   "${ROOT}/docs/specs/TRIPLE_DECKER_FSM.md"
+  "${ROOT}/docs/ARCHITECTURE_QUICK_WINS.md"
+  "${ROOT}/docs/RELEASE_MANIFEST_TRINET_V1.md"
   "${ROOT}/tests/vectors/nmse_gf16_bf16.golden.json"
   "${ROOT}/conformance/d2d/header_valid.json"
   "${ROOT}/conformance/d2d/bad_crc.json"

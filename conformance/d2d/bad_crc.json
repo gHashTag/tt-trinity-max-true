@@ -1,0 +1,40 @@
+{
+  "$schema_version": "1.0",
+  "name": "d2d_bad_crc",
+  "claim_ids": ["TN-D2D-04"],
+  "scenario": "crc32_mismatch",
+  "description": "A D2D frame arriving with a deliberately corrupted CRC32 must be flagged by the per-decision receipt path and must not advance the long-horizon Blake3 anchor. This vector pins the expected behaviour of `src/crc32_receipt.v` + `src/multi_tile_receipt.v` under a single-bit payload flip.",
+  "frame_under_test": {
+    "header_hex": "0x47C0",
+    "payload_hex": "0xDEADBEEF",
+    "advertised_crc32_hex": "0xCAFEBABE",
+    "actual_crc32_hex": "0xCAFEBABF",
+    "fault_kind": "single_bit_flip_in_advertised_crc",
+    "note": "Values are illustrative; vector pins behaviour, not bit positions."
+  },
+  "expected": {
+    "crc_receipt_path": {
+      "flag": "CRC_MISMATCH",
+      "frame_accepted": false
+    },
+    "multi_tile_receipt": {
+      "frame_counter_advanced": false
+    },
+    "blake3_anchor": {
+      "state_mutated": false,
+      "rationale": "Long-horizon anchor must not absorb invalid frames."
+    },
+    "audit_log_ring_buffer": {
+      "entry_kind": "CRC_FAIL",
+      "ordering": "preserved"
+    }
+  },
+  "witness_rtl": [
+    "src/crc32_receipt.v",
+    "src/multi_tile_receipt.v",
+    "src/blake3_anchor.v",
+    "src/audit_log_ring_buffer.v"
+  ],
+  "witness_testbench": "test/tb_proof_trace_writer.v",
+  "anti_claim": "If the multi-tile receipt counter advances or the Blake3 anchor mutates while CRC_MISMATCH is flagged, the implementation violates TN-D2D-04."
+}

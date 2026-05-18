@@ -1,0 +1,35 @@
+{
+  "$schema_version": "1.0",
+  "name": "d2d_unsupported_opcode",
+  "claim_ids": ["TN-D2D-03", "TN-D2D-06"],
+  "scenario": "opcode_not_in_sacred_bank",
+  "description": "An opcode outside the sacred bank (`0xD0..0xFF` and the documented core opcodes) MUST be ignored on the D2D path: no receipt state advances, no anchor mutates, audit log records a single DROP entry. This vector pins drop/no-op semantics.",
+  "frame_under_test": {
+    "header_hex": "0x47C0",
+    "opcode_hex": "0x3A",
+    "opcode_classification": "reserved/unsupported",
+    "payload_hex": "0x00000000",
+    "crc32_hex": "valid_recomputed_over_frame"
+  },
+  "expected": {
+    "frame_accepted": false,
+    "drop_reason": "UNSUPPORTED_OPCODE",
+    "crc_receipt_path": {"flag": "OK"},
+    "multi_tile_receipt": {"frame_counter_advanced": false},
+    "blake3_anchor": {"state_mutated": false},
+    "audit_log_ring_buffer": {
+      "entry_kind": "OPCODE_DROP",
+      "entries_added": 1,
+      "ordering": "preserved"
+    },
+    "side_effects": {
+      "layer_frozen_register": "unchanged",
+      "w_tx_sync_strobe": "unchanged"
+    }
+  },
+  "witness_rtl": [
+    "src/d2d_holo_mesh.v",
+    "src/audit_log_ring_buffer.v"
+  ],
+  "anti_claim": "If an unsupported opcode advances the multi-tile receipt counter, mutates the Blake3 anchor, or toggles `layer_frozen`, the implementation violates TN-D2D-06."
+}
